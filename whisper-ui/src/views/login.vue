@@ -114,7 +114,7 @@
 
     <!-- Footer -->
     <div class="el-login-footer">
-      <span>Copyright © 2025 Whisper 智能客服系统. All Rights Reserved.</span>
+      <span>Copyright © 2025 Whisper AI Customer Service System. All Rights Reserved.</span>
     </div>
   </div>
 </template>
