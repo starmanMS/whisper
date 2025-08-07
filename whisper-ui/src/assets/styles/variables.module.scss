@@ -1,42 +1,41 @@
-// base color
-$blue: #324157;
-$light-blue: #333c46;
-$red: #C03639;
-$pink: #E65D6E;
-$green: #30B08F;
-$tiffany: #4AB7BD;
-$yellow: #FEC171;
-$panGreen: #30B08F;
+$blue: #4169ff;
+$light-blue: #6b7fff;     // 浅蓝色变体
+$red: #ff4757;            // 保持红色但调整为更现代的色调
+$pink: #ff69b4;           // Logo粉紫色
+$green: #2ed573;          // 现代绿色
+$tiffany: #7bed9f;        // 青色调整
+$yellow: #ffa502;         // 现代黄色
+$panGreen: #2ed573;       // 与green保持一致
 
-// 默认主题变量
-$menuText: #bfcbd9;
-$menuActiveText: #409eff;
-$menuBg: #304156;
-$menuHover: #263445;
+// 默认主题变量 - 基于Logo深色主题
+$menuText: #e1e5f0;        // 更亮的菜单文字色
+$menuActiveText: #4169ff;  // Logo主蓝色作为激活色
+$menuBg: #1a1a3a;         // Logo深色背景
+$menuHover: #2d2d5f;      // Logo中等深度背景
 
-// 浅色主题theme-light
+// 浅色主题theme-light - 优化的浅色配色
 $menuLightBg: #ffffff;
-$menuLightHover: #f0f1f5;
-$menuLightText: #303133;
-$menuLightActiveText: #409EFF;
+$menuLightHover: #f5f7ff;     // 带有蓝色调的悬停色
+$menuLightText: #2c3e50;      // 深色文字
+$menuLightActiveText: #4169ff; // Logo主蓝色
 
 // 基础变量
 $base-sidebar-width: 200px;
 $sideBarWidth: 200px;
 
-// 菜单暗色变量
-$base-menu-color: #bfcbd9;
-$base-menu-color-active: #f4f4f5;
-$base-menu-background: #304156;
-$base-sub-menu-background: #1f2d3d;
-$base-sub-menu-hover: #001528;
+// 菜单暗色变量 - 基于Logo配色
+$base-menu-color: #e1e5f0;
+$base-menu-color-active: #ffffff;
+$base-menu-background: #1a1a3a;    // Logo深色背景
+$base-sub-menu-background: #151529; // 更深的子菜单背景
+$base-sub-menu-hover: #2d2d5f;     // Logo中等深度背景
 
-// 组件变量
-$--color-primary: #409EFF;
-$--color-success: #67C23A;
-$--color-warning: #E6A23C;
-$--color-danger: #F56C6C;
-$--color-info: #909399;
+// 组件变量 - 基于Logo的现代配色
+$--color-primary: #4169ff;   // Logo主蓝色
+$--color-success: #2ed573;   // 现代绿色
+$--color-warning: #ffa502;   // 现代橙色
+$--color-danger: #ff4757;    // 现代红色
+$--color-info: #747d8c;      // 现代灰色
 
 :export {
   menuText: $menuText;
@@ -71,60 +70,65 @@ $--color-info: #909399;
   --sidebar-bg: #{$menuBg};
   --sidebar-text: #{$menuText};
   --menu-hover: #{$menuHover};
-  
+
   --navbar-bg: #ffffff;
-  --navbar-text: #303133;
-  
+  --navbar-text: #2c3e50;        // 更深的导航栏文字色
+
   /* splitpanes default-theme 变量 */
   --splitpanes-default-bg: #ffffff;
 
+  /* 主题色变量 */
+  --primary-color: #{$--color-primary};
+  --primary-light: #6b7fff;
+  --primary-dark: #2d4ccc;
+
 }
 
-// 暗黑模式变量
+// 暗黑模式变量 - 基于Logo深色主题
 html.dark {
   /* 默认通用 */
-  --el-bg-color: #141414;
-  --el-bg-color-overlay: #1d1e1f;
+  --el-bg-color: #1a1a3a;           // Logo深色背景
+  --el-bg-color-overlay: #2d2d5f;   // Logo中等深度背景
   --el-text-color-primary: #ffffff;
-  --el-text-color-regular: #d0d0d0;
-  --el-border-color: #434343;
-  --el-border-color-light: #434343;
+  --el-text-color-regular: #e1e5f0;
+  --el-border-color: #4a4a6a;
+  --el-border-color-light: #4a4a6a;
 
   /* 侧边栏 */
-  --sidebar-bg: #141414;
-  --sidebar-text: #ffffff;
-  --menu-hover: #2d2d2d;
+  --sidebar-bg: #1a1a3a;            // Logo深色背景
+  --sidebar-text: #e1e5f0;
+  --menu-hover: #2d2d5f;            // Logo中等深度背景
   --menu-active-text: #{$menuActiveText};
 
   /* 顶部导航栏 */
-  --navbar-bg: #141414;
+  --navbar-bg: #1a1a3a;             // Logo深色背景
   --navbar-text: #ffffff;
-  --navbar-hover: #141414;
+  --navbar-hover: #2d2d5f;          // Logo中等深度背景
 
   /* 标签栏 */
-  --tags-bg: #141414;
-  --tags-item-bg: #1d1e1f;
-  --tags-item-border: #303030;
-  --tags-item-text: #d0d0d0;
-  --tags-item-hover: #2d2d2d;
-  --tags-close-hover: #64666a;
+  --tags-bg: #1a1a3a;               // Logo深色背景
+  --tags-item-bg: #2d2d5f;          // Logo中等深度背景
+  --tags-item-border: #4a4a6a;
+  --tags-item-text: #e1e5f0;
+  --tags-item-hover: #4169ff;       // Logo主蓝色
+  --tags-close-hover: #6b7fff;
 
   /* splitpanes 组件暗黑模式变量 */
-  --splitpanes-bg: #141414;
-  --splitpanes-border: #303030;
-  --splitpanes-splitter-bg: #1d1e1f;
-  --splitpanes-splitter-hover-bg: #2d2d2d;
+  --splitpanes-bg: #1a1a3a;         // Logo深色背景
+  --splitpanes-border: #4a4a6a;
+  --splitpanes-splitter-bg: #2d2d5f; // Logo中等深度背景
+  --splitpanes-splitter-hover-bg: #4169ff; // Logo主蓝色
 
   /* blockquote 暗黑模式变量 */
-  --blockquote-bg: #1d1e1f;
-  --blockquote-border: #303030;
-  --blockquote-text: #d0d0d0;
-  
+  --blockquote-bg: #2d2d5f;         // Logo中等深度背景
+  --blockquote-border: #4169ff;     // Logo主蓝色
+  --blockquote-text: #e1e5f0;
+
   /* Cron 时间表达式 模式变量 */
-  --cron-border: #303030;
+  --cron-border: #4a4a6a;
 
   /* splitpanes default-theme 暗黑模式变量 */
-  --splitpanes-default-bg: #141414;
+  --splitpanes-default-bg: #1a1a3a;  // Logo深色背景
 
   /* 侧边栏菜单覆盖 */
    .sidebar-container {

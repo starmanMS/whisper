@@ -81,4 +81,6 @@ app.use(ElementPlus, {
   size: Cookies.get('size') || 'default'
 })
 
+document.body.classList.add('whisper-theme')
+
 app.mount('#app')

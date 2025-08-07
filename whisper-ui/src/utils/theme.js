@@ -1,12 +1,23 @@
-// 处理主题样式
-export function handleThemeStyle(theme) {
+// 处理主题样式 - 增强版，支持Whisper主题
+export function handleThemeStyle(theme = '#4169ff') {
+	// 设置Element Plus主色调
 	document.documentElement.style.setProperty('--el-color-primary', theme)
+
+	// 生成主色调的明暗变体
 	for (let i = 1; i <= 9; i++) {
 		document.documentElement.style.setProperty(`--el-color-primary-light-${i}`, `${getLightColor(theme, i / 10)}`)
 	}
 	for (let i = 1; i <= 9; i++) {
 		document.documentElement.style.setProperty(`--el-color-primary-dark-${i}`, `${getDarkColor(theme, i / 10)}`)
 	}
+
+	// 设置Whisper主题变量
+	document.documentElement.style.setProperty('--whisper-primary', theme)
+	document.documentElement.style.setProperty('--whisper-primary-light', getLightColor(theme, 0.3))
+	document.documentElement.style.setProperty('--whisper-primary-dark', getDarkColor(theme, 0.3))
+
+	// 应用主题类到body
+	document.body.classList.add('whisper-theme')
 }
 
 // hex颜色转rgb颜色

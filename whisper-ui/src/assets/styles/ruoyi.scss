@@ -3,6 +3,64 @@
  * Copyright (c) 2019 ruoyi
  */
 
+:root {
+  --whisper-primary: #4169ff;
+  --whisper-primary-light: #6b7fff;
+  --whisper-primary-dark: #2d4ccc;
+  --whisper-accent: #ff69b4;
+  --whisper-accent-light: #ff8cc8;
+  --whisper-accent-dark: #e91e63;
+
+  --whisper-bg-primary: #1a1a3a;
+  --whisper-bg-secondary: #2d2d5f;
+  --whisper-bg-tertiary: #4a4a6a;
+  --whisper-bg-glass: rgba(255, 255, 255, 0.1);
+  --whisper-bg-glass-dark: rgba(26, 26, 58, 0.8);
+
+  --whisper-text-primary: #ffffff;
+  --whisper-text-secondary: #e1e5f0;
+  --whisper-text-tertiary: #a0a6b8;
+  --whisper-text-muted: #747d8c;
+  --whisper-text-dark: #2c3e50;
+
+  --whisper-gradient-primary: linear-gradient(135deg, #4169ff 0%, #ff69b4 100%);
+  --whisper-gradient-secondary: linear-gradient(135deg, #1a1a3a 0%, #2d2d5f 100%);
+  --whisper-gradient-accent: linear-gradient(135deg, #6b7fff 0%, #ff8cc8 100%);
+  --whisper-gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+
+  --whisper-btn-gradient: linear-gradient(135deg, #4169ff 0%, #6b7fff 100%);
+  --whisper-btn-gradient-hover: linear-gradient(135deg, #2d4ccc 0%, #4169ff 100%);
+  --whisper-btn-gradient-active: linear-gradient(135deg, #1e3a8a 0%, #2d4ccc 100%);
+
+  --whisper-shadow-sm: 0 2px 4px rgba(65, 105, 255, 0.1);
+  --whisper-shadow-md: 0 4px 8px rgba(65, 105, 255, 0.15);
+  --whisper-shadow-lg: 0 8px 16px rgba(65, 105, 255, 0.2);
+  --whisper-shadow-xl: 0 12px 24px rgba(65, 105, 255, 0.25);
+  --whisper-shadow-2xl: 0 20px 40px rgba(65, 105, 255, 0.3);
+  --whisper-shadow-primary: 0 4px 12px rgba(65, 105, 255, 0.3);
+  --whisper-shadow-accent: 0 4px 12px rgba(255, 105, 180, 0.3);
+  --whisper-shadow-glow: 0 0 20px rgba(65, 105, 255, 0.4);
+
+  --whisper-transition-fast: 0.15s ease-in-out;
+  --whisper-transition-normal: 0.3s ease-in-out;
+  --whisper-transition-slow: 0.5s ease-in-out;
+  --whisper-transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+
+  --whisper-radius-sm: 6px;
+  --whisper-radius-md: 10px;
+  --whisper-radius-lg: 16px;
+  --whisper-radius-xl: 20px;
+  --whisper-radius-2xl: 24px;
+  --whisper-radius-full: 50%;
+
+  --whisper-space-xs: 4px;
+  --whisper-space-sm: 8px;
+  --whisper-space-md: 16px;
+  --whisper-space-lg: 24px;
+  --whisper-space-xl: 32px;
+  --whisper-space-2xl: 48px;
+}
+
 /** 基础通用 **/
 .pt5 {
   padding-top: 5px;
@@ -287,4 +345,77 @@
 /* 分割面板样式 */
 .splitpanes.default-theme .splitpanes__pane {
   background-color: var(--splitpanes-default-bg) !important;
+}
+
+.whisper-theme {
+  .el-button--primary {
+    background: var(--whisper-btn-gradient) !important;
+    border: none !important;
+    box-shadow: var(--whisper-shadow-primary);
+    transition: all var(--whisper-transition-normal);
+    color: white !important;
+
+    &:hover {
+      background: var(--whisper-btn-gradient-hover) !important;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(65, 105, 255, 0.4) !important;
+    }
+
+    &:focus {
+      background: var(--whisper-btn-gradient) !important;
+      box-shadow: var(--whisper-shadow-primary) !important;
+    }
+
+    &:active {
+      background: var(--whisper-btn-gradient-hover) !important;
+      transform: translateY(0);
+    }
+  }
+
+  .el-card {
+    border-radius: var(--whisper-radius-lg);
+    box-shadow: 0 2px 8px rgba(65, 105, 255, 0.1);
+    transition: all var(--whisper-transition-normal);
+
+    &:hover {
+      box-shadow: 0 4px 12px rgba(65, 105, 255, 0.15);
+      transform: translateY(-2px);
+    }
+  }
+}
+
+.whisper-gradient-text {
+  background: var(--whisper-gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-weight: 600;
+}
+
+body.whisper-theme {
+  --el-color-primary: var(--whisper-primary);
+  --el-color-primary-light-3: var(--whisper-primary-light);
+  --el-color-primary-dark-2: var(--whisper-primary-dark);
+}
+
+.el-button--primary {
+  background: var(--whisper-btn-gradient, linear-gradient(135deg, #4169ff 0%, #6b7fff 100%)) !important;
+  border: none !important;
+  color: white !important;
+
+  &:hover {
+    background: var(--whisper-btn-gradient-hover, linear-gradient(135deg, #2d4ccc 0%, #4169ff 100%)) !important;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(65, 105, 255, 0.3) !important;
+  }
+
+  &:focus {
+    background: var(--whisper-btn-gradient, linear-gradient(135deg, #4169ff 0%, #6b7fff 100%)) !important;
+    box-shadow: 0 0 0 2px rgba(65, 105, 255, 0.2) !important;
+  }
+
+  &:active {
+    background: var(--whisper-btn-gradient-hover, linear-gradient(135deg, #2d4ccc 0%, #4169ff 100%)) !important;
+    transform: translateY(0);
+  }
 }
