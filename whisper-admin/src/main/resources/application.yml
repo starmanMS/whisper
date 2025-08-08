@@ -1,5 +1,5 @@
 # 项目相关配置
-ruoyi:
+whisper:
   # 名称
   name: RuoYi
   # 版本
@@ -34,7 +34,7 @@ server:
 # 日志配置
 logging:
   level:
-    com.ruoyi: debug
+    com.whisper: debug
     org.springframework: warn
 
 # 用户配置

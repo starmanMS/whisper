@@ -4,16 +4,16 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	
-    <groupId>com.ruoyi</groupId>
+    <groupId>com.whisper</groupId>
     <artifactId>whisper</artifactId>
     <version>3.9.0</version>
 
-    <name>ruoyi</name>
-    <url>http://www.ruoyi.vip</url>
+    <name>whisper</name>
+    <url>http://www.whisper.vip</url>
     <description>Whisper智能客服系统</description>
     
     <properties>
-        <ruoyi.version>3.9.0</ruoyi.version>
+        <whisper.version>3.9.0</whisper.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
@@ -185,37 +185,37 @@
 
             <!-- 定时任务-->
             <dependency>
-                <groupId>com.ruoyi</groupId>
+                <groupId>com.whisper</groupId>
                 <artifactId>whisper-quartz</artifactId>
-                <version>${ruoyi.version}</version>
+                <version>3.9.0</version>
             </dependency>
 
             <!-- 代码生成-->
             <dependency>
-                <groupId>com.ruoyi</groupId>
+                <groupId>com.whisper</groupId>
                 <artifactId>whisper-generator</artifactId>
-                <version>${ruoyi.version}</version>
+                <version>${whisper.version}</version>
             </dependency>
 
             <!-- 核心模块-->
             <dependency>
-                <groupId>com.ruoyi</groupId>
+                <groupId>com.whisper</groupId>
                 <artifactId>whisper-framework</artifactId>
-                <version>${ruoyi.version}</version>
+                <version>${whisper.version}</version>
             </dependency>
 
             <!-- 系统模块-->
             <dependency>
-                <groupId>com.ruoyi</groupId>
+                <groupId>com.whisper</groupId>
                 <artifactId>whisper-system</artifactId>
-                <version>${ruoyi.version}</version>
+                <version>${whisper.version}</version>
             </dependency>
 
             <!-- 通用工具-->
             <dependency>
-                <groupId>com.ruoyi</groupId>
+                <groupId>com.whisper</groupId>
                 <artifactId>whisper-common</artifactId>
-                <version>${ruoyi.version}</version>
+                <version>${whisper.version}</version>
             </dependency>
 
         </dependencies>
@@ -228,6 +228,7 @@
         <module>whisper-quartz</module>
         <module>whisper-generator</module>
         <module>whisper-common</module>
+        <module>whisper-customer</module>
     </modules>
     <packaging>pom</packaging>
 
