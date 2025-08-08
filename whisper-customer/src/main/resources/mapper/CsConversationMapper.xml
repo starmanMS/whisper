@@ -1,0 +1,262 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.whisper.customer.mapper.CsConversationMapper">
+    
+    <resultMap type="CsConversation" id="CsConversationResult">
+        <result property="conversationId"       column="conversation_id"        />
+        <result property="sessionId"            column="session_id"             />
+        <result property="customerId"           column="customer_id"            />
+        <result property="agentId"              column="agent_id"               />
+        <result property="channel"              column="channel"                />
+        <result property="conversationType"     column="conversation_type"      />
+        <result property="title"                column="title"                  />
+        <result property="status"               column="status"                 />
+        <result property="priority"             column="priority"               />
+        <result property="startTime"            column="start_time"             />
+        <result property="endTime"              column="end_time"               />
+        <result property="duration"             column="duration"               />
+        <result property="satisfaction"         column="satisfaction"           />
+        <result property="isRobot"              column="is_robot"               />
+        <result property="transferCount"        column="transfer_count"         />
+        <result property="queueTime"            column="queue_time"             />
+        <result property="firstResponseTime"    column="first_response_time"    />
+        <result property="avgResponseTime"      column="avg_response_time"      />
+        <result property="messageCount"         column="message_count"          />
+        <result property="delFlag"              column="del_flag"               />
+        <result property="createBy"             column="create_by"              />
+        <result property="createTime"           column="create_time"            />
+        <result property="updateBy"             column="update_by"              />
+        <result property="updateTime"           column="update_time"            />
+        <result property="remark"               column="remark"                 />
+        <result property="reserved1"            column="reserved1"              />
+        <result property="reserved2"            column="reserved2"              />
+        <result property="reserved3"            column="reserved3"              />
+        <result property="extField1"            column="ext_field1"             />
+    </resultMap>
+
+    <sql id="selectCsConversationVo">
+        select conversation_id, session_id, customer_id, agent_id, channel, conversation_type, title, status, priority, start_time, end_time, duration, satisfaction, is_robot, transfer_count, queue_time, first_response_time, avg_response_time, message_count, del_flag, create_by, create_time, update_by, update_time, remark, reserved1, reserved2, reserved3, ext_field1 from cs_conversation
+    </sql>
+
+    <select id="selectCsConversationList" parameterType="CsConversation" resultMap="CsConversationResult">
+        <include refid="selectCsConversationVo"/>
+        <where>  
+            <if test="sessionId != null  and sessionId != ''"> and session_id = #{sessionId}</if>
+            <if test="customerId != null "> and customer_id = #{customerId}</if>
+            <if test="agentId != null "> and agent_id = #{agentId}</if>
+            <if test="channel != null  and channel != ''"> and channel = #{channel}</if>
+            <if test="conversationType != null  and conversationType != ''"> and conversation_type = #{conversationType}</if>
+            <if test="title != null  and title != ''"> and title like concat('%', #{title}, '%')</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+            <if test="priority != null  and priority != ''"> and priority = #{priority}</if>
+            <if test="satisfaction != null  and satisfaction != ''"> and satisfaction = #{satisfaction}</if>
+            <if test="isRobot != null  and isRobot != ''"> and is_robot = #{isRobot}</if>
+            <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(start_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(start_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            </if>
+            and del_flag = '0'
+        </where>
+        order by start_time desc
+    </select>
+    
+    <select id="selectCsConversationByConversationId" parameterType="Long" resultMap="CsConversationResult">
+        <include refid="selectCsConversationVo"/>
+        where conversation_id = #{conversationId} and del_flag = '0'
+    </select>
+
+    <select id="selectCsConversationBySessionId" parameterType="String" resultMap="CsConversationResult">
+        <include refid="selectCsConversationVo"/>
+        where session_id = #{sessionId} and del_flag = '0'
+    </select>
+
+    <select id="selectCsConversationByCustomerId" parameterType="Long" resultMap="CsConversationResult">
+        <include refid="selectCsConversationVo"/>
+        where customer_id = #{customerId} and del_flag = '0'
+        order by start_time desc
+    </select>
+
+    <select id="selectCsConversationByAgentId" parameterType="Long" resultMap="CsConversationResult">
+        <include refid="selectCsConversationVo"/>
+        where agent_id = #{agentId} and del_flag = '0'
+        order by start_time desc
+    </select>
+
+    <select id="selectPendingConversations" resultMap="CsConversationResult">
+        <include refid="selectCsConversationVo"/>
+        where status = '0' and del_flag = '0'
+        order by priority desc, start_time asc
+    </select>
+
+    <select id="selectActiveConversationsByAgentId" parameterType="Long" resultMap="CsConversationResult">
+        <include refid="selectCsConversationVo"/>
+        where agent_id = #{agentId} and status = '1' and del_flag = '0'
+        order by start_time desc
+    </select>
+
+    <select id="countActiveConversationsByAgentId" parameterType="Long" resultType="int">
+        select count(*) from cs_conversation 
+        where agent_id = #{agentId} and status = '1' and del_flag = '0'
+    </select>
+
+    <select id="countTodayConversations" resultType="int">
+        select count(*) from cs_conversation 
+        where del_flag = '0' 
+        and date_format(start_time,'%Y-%m-%d') = date_format(now(),'%Y-%m-%d')
+    </select>
+
+    <select id="countPendingConversations" resultType="int">
+        select count(*) from cs_conversation 
+        where status = '0' and del_flag = '0'
+    </select>
+
+    <select id="countConversationsByChannel" parameterType="String" resultType="int">
+        select count(*) from cs_conversation 
+        where channel = #{channel} and del_flag = '0'
+    </select>
+
+    <insert id="insertCsConversation" parameterType="CsConversation" useGeneratedKeys="true" keyProperty="conversationId">
+        insert into cs_conversation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="sessionId != null and sessionId != ''">session_id,</if>
+            <if test="customerId != null">customer_id,</if>
+            <if test="agentId != null">agent_id,</if>
+            <if test="channel != null and channel != ''">channel,</if>
+            <if test="conversationType != null">conversation_type,</if>
+            <if test="title != null">title,</if>
+            <if test="status != null">status,</if>
+            <if test="priority != null">priority,</if>
+            <if test="startTime != null">start_time,</if>
+            <if test="endTime != null">end_time,</if>
+            <if test="duration != null">duration,</if>
+            <if test="satisfaction != null">satisfaction,</if>
+            <if test="isRobot != null">is_robot,</if>
+            <if test="transferCount != null">transfer_count,</if>
+            <if test="queueTime != null">queue_time,</if>
+            <if test="firstResponseTime != null">first_response_time,</if>
+            <if test="avgResponseTime != null">avg_response_time,</if>
+            <if test="messageCount != null">message_count,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+            <if test="reserved1 != null">reserved1,</if>
+            <if test="reserved2 != null">reserved2,</if>
+            <if test="reserved3 != null">reserved3,</if>
+            <if test="extField1 != null">ext_field1,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="sessionId != null and sessionId != ''">#{sessionId},</if>
+            <if test="customerId != null">#{customerId},</if>
+            <if test="agentId != null">#{agentId},</if>
+            <if test="channel != null and channel != ''">#{channel},</if>
+            <if test="conversationType != null">#{conversationType},</if>
+            <if test="title != null">#{title},</if>
+            <if test="status != null">#{status},</if>
+            <if test="priority != null">#{priority},</if>
+            <if test="startTime != null">#{startTime},</if>
+            <if test="endTime != null">#{endTime},</if>
+            <if test="duration != null">#{duration},</if>
+            <if test="satisfaction != null">#{satisfaction},</if>
+            <if test="isRobot != null">#{isRobot},</if>
+            <if test="transferCount != null">#{transferCount},</if>
+            <if test="queueTime != null">#{queueTime},</if>
+            <if test="firstResponseTime != null">#{firstResponseTime},</if>
+            <if test="avgResponseTime != null">#{avgResponseTime},</if>
+            <if test="messageCount != null">#{messageCount},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+            <if test="reserved1 != null">#{reserved1},</if>
+            <if test="reserved2 != null">#{reserved2},</if>
+            <if test="reserved3 != null">#{reserved3},</if>
+            <if test="extField1 != null">#{extField1},</if>
+        </trim>
+    </insert>
+
+    <update id="updateCsConversation" parameterType="CsConversation">
+        update cs_conversation
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="sessionId != null and sessionId != ''">session_id = #{sessionId},</if>
+            <if test="customerId != null">customer_id = #{customerId},</if>
+            <if test="agentId != null">agent_id = #{agentId},</if>
+            <if test="channel != null and channel != ''">channel = #{channel},</if>
+            <if test="conversationType != null">conversation_type = #{conversationType},</if>
+            <if test="title != null">title = #{title},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="priority != null">priority = #{priority},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="duration != null">duration = #{duration},</if>
+            <if test="satisfaction != null">satisfaction = #{satisfaction},</if>
+            <if test="isRobot != null">is_robot = #{isRobot},</if>
+            <if test="transferCount != null">transfer_count = #{transferCount},</if>
+            <if test="queueTime != null">queue_time = #{queueTime},</if>
+            <if test="firstResponseTime != null">first_response_time = #{firstResponseTime},</if>
+            <if test="avgResponseTime != null">avg_response_time = #{avgResponseTime},</if>
+            <if test="messageCount != null">message_count = #{messageCount},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="reserved1 != null">reserved1 = #{reserved1},</if>
+            <if test="reserved2 != null">reserved2 = #{reserved2},</if>
+            <if test="reserved3 != null">reserved3 = #{reserved3},</if>
+            <if test="extField1 != null">ext_field1 = #{extField1},</if>
+        </trim>
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="assignConversationToAgent">
+        update cs_conversation 
+        set agent_id = #{agentId}, status = '1', update_time = now()
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="updateConversationStatus">
+        update cs_conversation 
+        set status = #{status}, update_time = now()
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="endConversation">
+        update cs_conversation 
+        set status = '2', end_time = #{endTime}, duration = #{duration}, update_time = now()
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="updateConversationStats">
+        update cs_conversation 
+        set message_count = #{messageCount}, avg_response_time = #{avgResponseTime}, update_time = now()
+        where conversation_id = #{conversationId}
+    </update>
+
+    <update id="updateConversationSatisfaction">
+        update cs_conversation 
+        set satisfaction = #{satisfaction}, update_time = now()
+        where conversation_id = #{conversationId}
+    </update>
+
+    <delete id="deleteCsConversationByConversationId" parameterType="Long">
+        update cs_conversation set del_flag = '2' where conversation_id = #{conversationId}
+    </delete>
+
+    <delete id="deleteCsConversationByConversationIds" parameterType="String">
+        update cs_conversation set del_flag = '2' where conversation_id in 
+        <foreach item="conversationId" collection="array" open="(" separator="," close=")">
+            #{conversationId}
+        </foreach>
+    </delete>
+
+</mapper>

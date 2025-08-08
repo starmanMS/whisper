@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.whisper.customer.mapper.CsMessageMapper">
+    
+    <resultMap type="CsMessage" id="CsMessageResult">
+        <result property="messageId"            column="message_id"             />
+        <result property="conversationId"       column="conversation_id"        />
+        <result property="senderType"           column="sender_type"            />
+        <result property="senderId"             column="sender_id"              />
+        <result property="senderName"           column="sender_name"            />
+        <result property="messageType"          column="message_type"           />
+        <result property="content"              column="content"                />
+        <result property="fileUrl"              column="file_url"               />
+        <result property="fileName"             column="file_name"              />
+        <result property="fileSize"             column="file_size"              />
+        <result property="isRead"               column="is_read"                />
+        <result property="readTime"             column="read_time"              />
+        <result property="isRecall"             column="is_recall"              />
+        <result property="recallTime"           column="recall_time"            />
+        <result property="replyToId"            column="reply_to_id"            />
+        <result property="sendTime"             column="send_time"              />
+        <result property="delFlag"              column="del_flag"               />
+        <result property="createBy"             column="create_by"              />
+        <result property="createTime"           column="create_time"            />
+        <result property="updateBy"             column="update_by"              />
+        <result property="updateTime"           column="update_time"            />
+        <result property="reserved1"            column="reserved1"              />
+        <result property="reserved2"            column="reserved2"              />
+        <result property="extField1"            column="ext_field1"             />
+    </resultMap>
+
+    <sql id="selectCsMessageVo">
+        select message_id, conversation_id, sender_type, sender_id, sender_name, message_type, content, file_url, file_name, file_size, is_read, read_time, is_recall, recall_time, reply_to_id, send_time, del_flag, create_by, create_time, update_by, update_time, reserved1, reserved2, ext_field1 from cs_message
+    </sql>
+
+    <select id="selectCsMessageList" parameterType="CsMessage" resultMap="CsMessageResult">
+        <include refid="selectCsMessageVo"/>
+        <where>  
+            <if test="conversationId != null "> and conversation_id = #{conversationId}</if>
+            <if test="senderType != null  and senderType != ''"> and sender_type = #{senderType}</if>
+            <if test="senderId != null "> and sender_id = #{senderId}</if>
+            <if test="senderName != null  and senderName != ''"> and sender_name like concat('%', #{senderName}, '%')</if>
+            <if test="messageType != null  and messageType != ''"> and message_type = #{messageType}</if>
+            <if test="content != null  and content != ''"> and content like concat('%', #{content}, '%')</if>
+            <if test="isRead != null  and isRead != ''"> and is_read = #{isRead}</if>
+            <if test="isRecall != null  and isRecall != ''"> and is_recall = #{isRecall}</if>
+            <if test="replyToId != null "> and reply_to_id = #{replyToId}</if>
+            <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
+                and date_format(send_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
+                and date_format(send_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            </if>
+            and del_flag = '0'
+        </where>
+        order by send_time desc
+    </select>
+    
+    <select id="selectCsMessageByMessageId" parameterType="Long" resultMap="CsMessageResult">
+        <include refid="selectCsMessageVo"/>
+        where message_id = #{messageId} and del_flag = '0'
+    </select>
+
+    <select id="selectCsMessageByConversationId" parameterType="Long" resultMap="CsMessageResult">
+        <include refid="selectCsMessageVo"/>
+        where conversation_id = #{conversationId} and del_flag = '0'
+        order by send_time asc
+    </select>
+
+    <select id="selectCsMessageByConversationIdWithPage" resultMap="CsMessageResult">
+        <include refid="selectCsMessageVo"/>
+        where conversation_id = #{conversationId} and del_flag = '0'
+        order by send_time desc
+        limit #{offset}, #{limit}
+    </select>
+
+    <select id="selectCsMessageBySender" resultMap="CsMessageResult">
+        <include refid="selectCsMessageVo"/>
+        where sender_type = #{senderType} and sender_id = #{senderId} and del_flag = '0'
+        order by send_time desc
+    </select>
+
+    <select id="selectLastMessageByConversationId" parameterType="Long" resultMap="CsMessageResult">
+        <include refid="selectCsMessageVo"/>
+        where conversation_id = #{conversationId} and del_flag = '0'
+        order by send_time desc
+        limit 1
+    </select>
+
+    <select id="countMessagesByConversationId" parameterType="Long" resultType="int">
+        select count(*) from cs_message 
+        where conversation_id = #{conversationId} and del_flag = '0'
+    </select>
+
+    <select id="countMessagesByType" resultType="int">
+        select count(*) from cs_message 
+        where conversation_id = #{conversationId} and message_type = #{messageType} and del_flag = '0'
+    </select>
+
+    <select id="countUnreadMessagesByConversation" resultType="int">
+        select count(*) from cs_message 
+        where conversation_id = #{conversationId} and sender_type = #{senderType} and is_read = '0' and del_flag = '0'
+    </select>
+
+    <select id="selectMessagesByTimeRange" resultMap="CsMessageResult">
+        <include refid="selectCsMessageVo"/>
+        where conversation_id = #{conversationId} 
+        and send_time between #{startTime} and #{endTime}
+        and del_flag = '0'
+        order by send_time asc
+    </select>
+
+    <insert id="insertCsMessage" parameterType="CsMessage" useGeneratedKeys="true" keyProperty="messageId">
+        insert into cs_message
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="conversationId != null">conversation_id,</if>
+            <if test="senderType != null and senderType != ''">sender_type,</if>
+            <if test="senderId != null">sender_id,</if>
+            <if test="senderName != null">sender_name,</if>
+            <if test="messageType != null">message_type,</if>
+            <if test="content != null and content != ''">content,</if>
+            <if test="fileUrl != null">file_url,</if>
+            <if test="fileName != null">file_name,</if>
+            <if test="fileSize != null">file_size,</if>
+            <if test="isRead != null">is_read,</if>
+            <if test="readTime != null">read_time,</if>
+            <if test="isRecall != null">is_recall,</if>
+            <if test="recallTime != null">recall_time,</if>
+            <if test="replyToId != null">reply_to_id,</if>
+            <if test="sendTime != null">send_time,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="reserved1 != null">reserved1,</if>
+            <if test="reserved2 != null">reserved2,</if>
+            <if test="extField1 != null">ext_field1,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="conversationId != null">#{conversationId},</if>
+            <if test="senderType != null and senderType != ''">#{senderType},</if>
+            <if test="senderId != null">#{senderId},</if>
+            <if test="senderName != null">#{senderName},</if>
+            <if test="messageType != null">#{messageType},</if>
+            <if test="content != null and content != ''">#{content},</if>
+            <if test="fileUrl != null">#{fileUrl},</if>
+            <if test="fileName != null">#{fileName},</if>
+            <if test="fileSize != null">#{fileSize},</if>
+            <if test="isRead != null">#{isRead},</if>
+            <if test="readTime != null">#{readTime},</if>
+            <if test="isRecall != null">#{isRecall},</if>
+            <if test="recallTime != null">#{recallTime},</if>
+            <if test="replyToId != null">#{replyToId},</if>
+            <if test="sendTime != null">#{sendTime},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="reserved1 != null">#{reserved1},</if>
+            <if test="reserved2 != null">#{reserved2},</if>
+            <if test="extField1 != null">#{extField1},</if>
+        </trim>
+    </insert>
+
+    <update id="updateCsMessage" parameterType="CsMessage">
+        update cs_message
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="conversationId != null">conversation_id = #{conversationId},</if>
+            <if test="senderType != null and senderType != ''">sender_type = #{senderType},</if>
+            <if test="senderId != null">sender_id = #{senderId},</if>
+            <if test="senderName != null">sender_name = #{senderName},</if>
+            <if test="messageType != null">message_type = #{messageType},</if>
+            <if test="content != null and content != ''">content = #{content},</if>
+            <if test="fileUrl != null">file_url = #{fileUrl},</if>
+            <if test="fileName != null">file_name = #{fileName},</if>
+            <if test="fileSize != null">file_size = #{fileSize},</if>
+            <if test="isRead != null">is_read = #{isRead},</if>
+            <if test="readTime != null">read_time = #{readTime},</if>
+            <if test="isRecall != null">is_recall = #{isRecall},</if>
+            <if test="recallTime != null">recall_time = #{recallTime},</if>
+            <if test="replyToId != null">reply_to_id = #{replyToId},</if>
+            <if test="sendTime != null">send_time = #{sendTime},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="reserved1 != null">reserved1 = #{reserved1},</if>
+            <if test="reserved2 != null">reserved2 = #{reserved2},</if>
+            <if test="extField1 != null">ext_field1 = #{extField1},</if>
+        </trim>
+        where message_id = #{messageId}
+    </update>
+
+    <update id="markMessageAsRead">
+        update cs_message 
+        set is_read = '1', read_time = #{readTime}, update_time = now()
+        where message_id = #{messageId}
+    </update>
+
+    <update id="markMessagesAsReadByConversation">
+        update cs_message 
+        set is_read = '1', read_time = #{readTime}, update_time = now()
+        where conversation_id = #{conversationId} and sender_type = #{senderType} and is_read = '0'
+    </update>
+
+    <update id="recallMessage">
+        update cs_message 
+        set is_recall = '1', recall_time = #{recallTime}, update_time = now()
+        where message_id = #{messageId}
+    </update>
+
+    <delete id="deleteCsMessageByMessageId" parameterType="Long">
+        update cs_message set del_flag = '2' where message_id = #{messageId}
+    </delete>
+
+    <delete id="deleteCsMessageByMessageIds" parameterType="String">
+        update cs_message set del_flag = '2' where message_id in 
+        <foreach item="messageId" collection="array" open="(" separator="," close=")">
+            #{messageId}
+        </foreach>
+    </delete>
+
+    <delete id="deleteMessagesBefore" parameterType="java.util.Date">
+        delete from cs_message where send_time &lt; #{beforeTime}
+    </delete>
+
+</mapper>
