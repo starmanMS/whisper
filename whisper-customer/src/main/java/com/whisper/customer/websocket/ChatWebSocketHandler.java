@@ -10,6 +10,9 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.PathParam;
 import javax.websocket.server.ServerEndpoint;
+import com.whisper.customer.domain.CsConversation;
+import com.whisper.customer.domain.CsCustomer;
+import com.whisper.customer.service.ICsCustomerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +23,7 @@ import com.whisper.common.utils.spring.SpringUtils;
 import com.whisper.customer.domain.CsMessage;
 import com.whisper.customer.service.ICsMessageService;
 import com.whisper.customer.service.ICsConversationService;
+import com.whisper.customer.domain.CsConversation;
 
 /**
  * WebSocket处理器 - 客服聊天
@@ -56,26 +60,48 @@ public class ChatWebSocketHandler
     @OnOpen
     public void onOpen(Session session, @PathParam("userType") String userType, @PathParam("userId") String userId)
     {
-        this.session = session;
-        this.userType = userType;
-        this.userId = userId;
-        
-        // 加入set中
-        webSocketSet.add(this);
-        
-        // 添加到用户连接映射
-        String userKey = userType + "_" + userId;
-        userConnections.put(userKey, this);
-        
-        // 在线数加1
-        addOnlineCount();
-        
-        log.info("用户{}连接WebSocket成功，当前在线人数为：{}", userKey, getOnlineCount());
-        
         try {
-            sendMessage(JSON.toJSONString(new WebSocketMessage("system", "连接成功", null)));
-        } catch (IOException e) {
-            log.error("WebSocket IO异常", e);
+            this.session = session;
+            this.userType = userType;
+            this.userId = userId;
+
+            String userKey = userType + "_" + userId;
+
+            // 检查是否已有相同用户的连接，如果有则关闭旧连接
+            ChatWebSocketHandler existingHandler = userConnections.get(userKey);
+            if (existingHandler != null && existingHandler != this &&
+                existingHandler.session != null && existingHandler.session.isOpen()) {
+                try {
+                    existingHandler.session.close();
+                    webSocketSet.remove(existingHandler);
+                    log.info("关闭用户{}的旧连接", userKey);
+                } catch (IOException e) {
+                    log.warn("关闭旧连接失败: {}", e.getMessage());
+                }
+            }
+
+            // 加入set中
+            webSocketSet.add(this);
+
+            // 添加到用户连接映射
+            userConnections.put(userKey, this);
+
+            // 在线数加1
+            addOnlineCount();
+
+            log.info("用户{}连接WebSocket成功，当前在线人数为：{}", userKey, getOnlineCount());
+
+            // 简化连接成功消息发送
+            try {
+                // 不延迟，直接发送连接成功消息
+                sendMessage(JSON.toJSONString(new WebSocketMessage("system", "连接成功", null)));
+                log.info("已发送连接成功消息给用户{}", userKey);
+            } catch (IOException e) {
+                log.warn("发送连接成功消息失败: {}", e.getMessage());
+            }
+
+        } catch (Exception e) {
+            log.error("WebSocket连接建立过程中发生错误", e);
         }
     }
 
@@ -133,7 +159,24 @@ public class ChatWebSocketHandler
     @OnError
     public void onError(Session session, Throwable error)
     {
-        log.error("用户{}的WebSocket发生错误", userType + "_" + userId, error);
+        String userKey = userType + "_" + userId;
+
+        // 检查是否是连接中断错误
+        if (error instanceof IOException &&
+            error.getMessage().contains("An established connection was aborted")) {
+            log.warn("用户{}的WebSocket连接被中断: {}", userKey, error.getMessage());
+        } else {
+            log.error("用户{}的WebSocket发生错误", userKey, error);
+        }
+
+        // 清理连接
+        try {
+            if (session.isOpen()) {
+                session.close();
+            }
+        } catch (IOException e) {
+            log.debug("关闭WebSocket会话时出错: {}", e.getMessage());
+        }
     }
 
     /**
@@ -141,7 +184,18 @@ public class ChatWebSocketHandler
      */
     public void sendMessage(String message) throws IOException
     {
-        this.session.getBasicRemote().sendText(message);
+        if (session != null && session.isOpen()) {
+            try {
+                synchronized (session) {
+                    this.session.getBasicRemote().sendText(message);
+                }
+            } catch (IOException e) {
+                log.warn("发送WebSocket消息失败: {}", e.getMessage());
+                throw e;
+            }
+        } else {
+            throw new IOException("WebSocket会话已关闭或不可用");
+        }
     }
 
     /**
@@ -154,15 +208,22 @@ public class ChatWebSocketHandler
             String content = messageObj.getString("content");
             String messageType = messageObj.getString("messageType");
             String senderName = messageObj.getString("senderName");
-            
+
+            // 获取真实的发送者ID
+            Long realSenderId = getRealSenderId(conversationId);
+            if (realSenderId == null) {
+                log.warn("无法获取用户{}的真实ID，会话ID: {}", userId, conversationId);
+                return;
+            }
+
             // 保存消息到数据库
             ICsMessageService messageService = SpringUtils.getBean(ICsMessageService.class);
             CsMessage message = messageService.sendMessage(
-                conversationId, 
-                userType.equals("customer") ? "1" : "2", 
-                Long.valueOf(userId), 
-                senderName, 
-                messageType, 
+                conversationId,
+                userType.equals("customer") ? "1" : "2",
+                realSenderId,
+                senderName,
+                messageType,
                 content
             );
             
@@ -214,6 +275,52 @@ public class ChatWebSocketHandler
     }
 
     /**
+     * 获取真实的发送者ID
+     * 通过会话信息或客户编号获取客户或客服的真实数字ID
+     */
+    private Long getRealSenderId(Long conversationId)
+    {
+        try {
+            if ("customer".equals(userType)) {
+                // 对于客户，优先通过会话获取客户ID
+                ICsConversationService conversationService = SpringUtils.getBean(ICsConversationService.class);
+                CsConversation conversation = conversationService.selectCsConversationByConversationId(conversationId);
+                if (conversation != null) {
+                    return conversation.getCustomerId();
+                }
+
+                // 如果会话中没有，尝试通过客户编号查找
+                if (userId != null && userId.startsWith("CUS")) {
+                    ICsCustomerService customerService = SpringUtils.getBean(ICsCustomerService.class);
+                    CsCustomer customer = customerService.selectCsCustomerByCustomerNo(userId);
+                    if (customer != null) {
+                        return customer.getCustomerId();
+                    }
+                }
+            } else if ("agent".equals(userType)) {
+                // 对于客服，通过会话获取客服ID
+                ICsConversationService conversationService = SpringUtils.getBean(ICsConversationService.class);
+                CsConversation conversation = conversationService.selectCsConversationByConversationId(conversationId);
+                if (conversation != null) {
+                    return conversation.getAgentId();
+                }
+            }
+
+            // 最后尝试解析userId（兼容数字格式）
+            try {
+                return Long.valueOf(userId);
+            } catch (NumberFormatException e) {
+                log.debug("用户ID {} 不是数字格式，尝试其他方式获取", userId);
+            }
+
+            return null;
+        } catch (Exception e) {
+            log.error("获取真实发送者ID异常", e);
+            return null;
+        }
+    }
+
+    /**
      * 转发消息给目标用户
      */
     private void forwardMessageToTarget(Long conversationId, CsMessage message)
@@ -221,8 +328,22 @@ public class ChatWebSocketHandler
         try {
             // 获取会话信息，确定目标用户
             ICsConversationService conversationService = SpringUtils.getBean(ICsConversationService.class);
-            // TODO: 根据会话信息确定目标用户并转发消息
-            
+            CsConversation conversation = conversationService.selectCsConversationByConversationId(conversationId);
+
+            if (conversation != null) {
+                // 构造转发消息
+                WebSocketMessage forwardMessage = new WebSocketMessage("message", "收到新消息", message);
+                String messageJson = JSON.toJSONString(forwardMessage);
+
+                // 如果是客户发送的消息，转发给客服
+                if ("1".equals(message.getSenderType()) && conversation.getAgentId() != null) {
+                    sendMessageToUser("agent", conversation.getAgentId().toString(), messageJson);
+                }
+                // 如果是客服发送的消息，转发给客户
+                else if ("2".equals(message.getSenderType())) {
+                    sendMessageToUser("customer", conversation.getCustomerId().toString(), messageJson);
+                }
+            }
         } catch (Exception e) {
             log.error("转发消息异常", e);
         }

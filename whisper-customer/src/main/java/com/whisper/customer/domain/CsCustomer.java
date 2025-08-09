@@ -97,11 +97,11 @@ public class CsCustomer extends BaseEntity
     /** 删除标志（0存在 2删除） */
     private String delFlag;
 
-    /** 预留字段1 */
-    private String reserved1;
+    /** IP地址 */
+    private String ipAddress;
 
-    /** 预留字段2 */
-    private String reserved2;
+    /** IP地理位置 */
+    private String ipLocation;
 
     /** 预留字段3 */
     private String reserved3;
@@ -326,24 +326,24 @@ public class CsCustomer extends BaseEntity
         this.delFlag = delFlag;
     }
 
-    public String getReserved1()
+    public String getIpAddress()
     {
-        return reserved1;
+        return ipAddress;
     }
 
-    public void setReserved1(String reserved1)
+    public void setIpAddress(String ipAddress)
     {
-        this.reserved1 = reserved1;
+        this.ipAddress = ipAddress;
     }
 
-    public String getReserved2()
+    public String getIpLocation()
     {
-        return reserved2;
+        return ipLocation;
     }
 
-    public void setReserved2(String reserved2)
+    public void setIpLocation(String ipLocation)
     {
-        this.reserved2 = reserved2;
+        this.ipLocation = ipLocation;
     }
 
     public String getReserved3()
@@ -405,8 +405,8 @@ public class CsCustomer extends BaseEntity
             .append("updateBy", getUpdateBy())
             .append("updateTime", getUpdateTime())
             .append("remark", getRemark())
-            .append("reserved1", getReserved1())
-            .append("reserved2", getReserved2())
+            .append("ipAddress", getIpAddress())
+            .append("ipLocation", getIpLocation())
             .append("reserved3", getReserved3())
             .append("extField1", getExtField1())
             .append("extField2", getExtField2())

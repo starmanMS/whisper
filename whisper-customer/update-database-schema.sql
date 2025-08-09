@@ -6,11 +6,11 @@ ALTER TABLE cs_customer MODIFY COLUMN reserved1 VARCHAR(100) COMMENT 'IP地址';
 ALTER TABLE cs_customer MODIFY COLUMN reserved2 VARCHAR(200) COMMENT 'IP地理位置';
 
 -- 为了更好的可读性，也可以考虑重命名字段（可选，需要同时更新代码）
--- ALTER TABLE cs_customer CHANGE COLUMN reserved1 ip_address VARCHAR(100) COMMENT 'IP地址';
--- ALTER TABLE cs_customer CHANGE COLUMN reserved2 ip_location VARCHAR(200) COMMENT 'IP地理位置';
+ALTER TABLE cs_customer CHANGE COLUMN reserved1 ip_address VARCHAR(100) COMMENT 'IP地址';
+ALTER TABLE cs_customer CHANGE COLUMN reserved2 ip_location VARCHAR(200) COMMENT 'IP地理位置';
 
 -- 添加索引以提高查询性能
-CREATE INDEX idx_cs_customer_ip_address ON cs_customer(reserved1);
+CREATE INDEX idx_cs_customer_ip_address ON cs_customer(ip_address);
 CREATE INDEX idx_cs_customer_create_time ON cs_customer(create_time);
 
 -- 更新表注释
@@ -28,7 +28,7 @@ FROM
 WHERE 
     TABLE_SCHEMA = DATABASE() 
     AND TABLE_NAME = 'cs_customer' 
-    AND COLUMN_NAME IN ('reserved1', 'reserved2')
+    AND COLUMN_NAME IN ('ip_address', 'ip_location')
 ORDER BY 
     ORDINAL_POSITION;
 

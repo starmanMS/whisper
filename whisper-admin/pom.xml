@@ -61,6 +61,12 @@
             <artifactId>whisper-generator</artifactId>
         </dependency>
 
+        <!-- 客服模块-->
+        <dependency>
+            <groupId>com.whisper</groupId>
+            <artifactId>whisper-customer</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

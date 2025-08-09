@@ -112,6 +112,15 @@ public class SecurityConfig
                 permitAllUrl.getUrls().forEach(url -> requests.antMatchers(url).permitAll());
                 // 对于登录login 注册register 验证码captchaImage 允许匿名访问
                 requests.antMatchers("/login", "/register", "/captchaImage").permitAll()
+                    // 前台聊天接口，允许匿名访问
+                    .antMatchers("/api/chat/**").permitAll()
+                    .antMatchers("/api/test/**").permitAll()
+                    // WebSocket相关接口，允许匿名访问
+                    .antMatchers("/websocket/**").permitAll()
+                    .antMatchers("/api/websocket/**").permitAll()
+                    // 错误的路径组合，也允许匿名访问（兼容前端可能的错误请求）
+                    .antMatchers("/websocket/api/chat/**").permitAll()
+                    .antMatchers("/websocket/api/test/**").permitAll()
                     // 静态资源，可匿名访问
                     .antMatchers(HttpMethod.GET, "/", "/*.html", "/**/*.html", "/**/*.css", "/**/*.js", "/profile/**").permitAll()
                     .antMatchers("/swagger-ui.html", "/swagger-resources/**", "/webjars/**", "/*/api-docs", "/druid/**").permitAll()

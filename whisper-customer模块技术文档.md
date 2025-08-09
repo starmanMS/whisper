@@ -355,3 +355,635 @@ public class CsCustomerServiceImpl implements ICsCustomerService {
     }
 }
 ```
+
+### 6.3 WebSocket消息处理
+```java
+@Component
+public class ChatWebSocketHandler {
+
+    /**
+     * 处理聊天消息
+     */
+    private void handleChatMessage(JSONObject messageObj) {
+        try {
+            Long conversationId = messageObj.getLong("conversationId");
+            String content = messageObj.getString("content");
+            String messageType = messageObj.getString("messageType");
+            String senderName = messageObj.getString("senderName");
+
+            // 保存消息到数据库
+            ICsMessageService messageService = SpringUtils.getBean(ICsMessageService.class);
+            CsMessage message = messageService.sendMessage(
+                conversationId,
+                userType.equals("customer") ? "1" : "2",
+                Long.valueOf(userId),
+                senderName,
+                messageType,
+                content
+            );
+
+            if (message != null) {
+                // 构造WebSocket消息
+                WebSocketMessage wsMessage = new WebSocketMessage("message", "消息发送成功", message);
+
+                // 发送给发送者确认
+                sendMessage(JSON.toJSONString(wsMessage));
+
+                // 转发给对方
+                forwardMessageToTarget(conversationId, message);
+            }
+        } catch (Exception e) {
+            log.error("处理聊天消息异常", e);
+        }
+    }
+
+    /**
+     * 处理心跳消息
+     */
+    private void handleHeartbeat() {
+        try {
+            sendMessage(JSON.toJSONString(new WebSocketMessage("heartbeat", "pong", null)));
+        } catch (IOException e) {
+            log.error("发送心跳响应异常", e);
+        }
+    }
+}
+```
+
+## 7. 配置管理
+
+### 7.1 WebSocket配置
+```java
+@Configuration
+public class WebSocketConfig {
+
+    /**
+     * 注入ServerEndpointExporter，
+     * 这个bean会自动注册使用了@ServerEndpoint注解声明的Websocket endpoint
+     */
+    @Bean
+    public ServerEndpointExporter serverEndpointExporter() {
+        return new ServerEndpointExporter();
+    }
+}
+```
+
+### 7.2 数据库配置
+```xml
+<!-- MyBatis配置 -->
+<configuration>
+    <settings>
+        <setting name="cacheEnabled" value="true"/>
+        <setting name="lazyLoadingEnabled" value="true"/>
+        <setting name="multipleResultSetsEnabled" value="true"/>
+        <setting name="useColumnLabel" value="true"/>
+        <setting name="useGeneratedKeys" value="false"/>
+        <setting name="autoMappingBehavior" value="PARTIAL"/>
+        <setting name="defaultExecutorType" value="SIMPLE"/>
+        <setting name="mapUnderscoreToCamelCase" value="true"/>
+        <setting name="localCacheScope" value="SESSION"/>
+        <setting name="jdbcTypeForNull" value="NULL"/>
+    </settings>
+</configuration>
+```
+
+### 7.3 跨域配置
+```java
+@RestController
+@RequestMapping("/api/chat")
+@CrossOrigin(origins = "*", maxAge = 3600)
+public class ChatApiController {
+    // 支持跨域访问，允许前端Widget调用
+}
+```
+
+## 8. 安全机制
+
+### 8.1 API安全
+- **匿名访问**: 聊天API支持匿名访问，无需登录认证
+- **跨域支持**: 配置CORS支持跨域访问
+- **参数验证**: 严格的输入参数验证和过滤
+- **SQL注入防护**: 使用MyBatis参数化查询防止SQL注入
+
+### 8.2 数据安全
+- **敏感信息加密**: 客户敏感信息加密存储
+- **数据脱敏**: 日志中敏感数据脱敏处理
+- **访问控制**: 基于角色的数据访问控制
+- **审计日志**: 完整的操作审计日志记录
+
+### 8.3 通信安全
+- **WebSocket安全**: WebSocket连接安全验证
+- **消息加密**: 敏感消息内容加密传输
+- **连接限制**: 防止恶意连接和DDoS攻击
+- **心跳检测**: 定期心跳检测确保连接有效性
+
+## 9. 性能优化
+
+### 9.1 数据库优化
+- **索引优化**: 关键字段建立合适索引
+- **分页查询**: 大数据量分页查询优化
+- **连接池**: 数据库连接池配置优化
+- **查询缓存**: 热点数据查询缓存
+
+### 9.2 WebSocket优化
+- **连接管理**: 高效的WebSocket连接管理
+- **消息队列**: 异步消息处理队列
+- **负载均衡**: WebSocket连接负载均衡
+- **资源回收**: 及时释放无效连接资源
+
+### 9.3 缓存策略
+- **Redis缓存**: 热点数据Redis缓存
+- **本地缓存**: 配置数据本地缓存
+- **缓存更新**: 智能缓存更新策略
+- **缓存穿透**: 防止缓存穿透和雪崩
+
+## 10. 监控和日志
+
+### 10.1 系统监控
+- **性能监控**: 接口响应时间和吞吐量监控
+- **错误监控**: 系统异常和错误率监控
+- **资源监控**: CPU、内存、网络资源监控
+- **业务监控**: 会话数量、消息量等业务指标监控
+
+### 10.2 日志管理
+- **分级日志**: DEBUG、INFO、WARN、ERROR分级日志
+- **结构化日志**: JSON格式结构化日志输出
+- **日志轮转**: 按时间和大小自动日志轮转
+- **日志分析**: ELK日志分析和检索
+
+### 10.3 关键指标
+- **会话成功率**: 会话创建成功率统计
+- **消息送达率**: 消息发送成功率统计
+- **WebSocket连接率**: WebSocket连接成功率统计
+- **API响应时间**: 各API接口平均响应时间
+
+## 11. 部署说明
+
+### 11.1 环境要求
+- **JDK**: 17+
+- **MySQL**: 8.0+
+- **Redis**: 6.0+
+- **Maven**: 3.6+
+- **操作系统**: Linux/Windows/MacOS
+
+### 11.2 构建部署
+```bash
+# 1. 编译打包
+mvn clean package -Dmaven.test.skip=true
+
+# 2. 数据库初始化
+mysql -u root -p < whisper.sql
+mysql -u root -p < update-database-schema.sql
+
+# 3. 启动应用
+java -jar whisper-admin.jar
+
+# 4. 验证部署
+curl http://localhost:8080/api/chat/test
+```
+
+### 11.3 配置文件
+```yaml
+# application.yml
+server:
+  port: 8080
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/whisper?useUnicode=true&characterEncoding=utf8
+    username: root
+    password: password
+
+  redis:
+    host: localhost
+    port: 6379
+
+# WebSocket配置
+websocket:
+  path: /websocket/chat
+  allowed-origins: "*"
+
+# 客服系统配置
+customer:
+  auto-assign: true
+  max-concurrent: 10
+  session-timeout: 1800
+```
+
+## 12. 测试指南
+
+### 12.1 单元测试
+```java
+@SpringBootTest
+@Transactional
+public class CsCustomerServiceTest {
+
+    @Autowired
+    private ICsCustomerService csCustomerService;
+
+    @Test
+    public void testGenerateCustomerNo() {
+        String customerNo = csCustomerService.generateCustomerNo();
+        assertThat(customerNo).startsWith("CUS");
+        assertThat(customerNo).hasSize(15);
+    }
+
+    @Test
+    public void testCreateCustomer() {
+        CsCustomer customer = new CsCustomer();
+        customer.setCustomerName("测试客户");
+        customer.setPhone("13800138000");
+
+        int result = csCustomerService.insertCsCustomer(customer);
+        assertThat(result).isEqualTo(1);
+        assertThat(customer.getCustomerId()).isNotNull();
+    }
+}
+```
+
+### 12.2 集成测试
+```bash
+#!/bin/bash
+# test-chat-api.sh - API功能测试脚本
+
+BASE_URL="http://localhost:8080/api/chat"
+
+echo "=== 测试聊天API功能 ==="
+
+# 1. 测试API连通性
+echo "1. 测试API连通性..."
+curl -X GET "$BASE_URL/test"
+
+# 2. 测试初始化聊天
+echo "2. 测试初始化聊天..."
+INIT_RESPONSE=$(curl -s -X POST "$BASE_URL/init" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "customerId": "test_customer_001",
+    "customerName": "测试客户",
+    "channel": "web"
+  }')
+
+echo "初始化响应: $INIT_RESPONSE"
+
+# 3. 提取会话ID
+CONVERSATION_ID=$(echo $INIT_RESPONSE | jq -r '.data.conversationId')
+echo "会话ID: $CONVERSATION_ID"
+
+# 4. 测试发送消息
+echo "3. 测试发送消息..."
+curl -s -X POST "$BASE_URL/sendMessage" \
+  -H "Content-Type: application/json" \
+  -d "{
+    \"conversationId\": $CONVERSATION_ID,
+    \"content\": \"你好，我需要帮助\",
+    \"messageType\": \"text\",
+    \"senderName\": \"测试客户\"
+  }"
+
+# 5. 测试获取消息历史
+echo "4. 测试获取消息历史..."
+curl -s -X GET "$BASE_URL/messages/$CONVERSATION_ID?pageNum=1&pageSize=10"
+
+echo "=== 测试完成 ==="
+```
+
+### 12.3 WebSocket测试
+```javascript
+// WebSocket连接测试
+const ws = new WebSocket('ws://localhost:8080/websocket/chat/customer/test001');
+
+ws.onopen = function(event) {
+    console.log('WebSocket连接已建立');
+
+    // 发送心跳
+    ws.send(JSON.stringify({
+        type: 'heartbeat',
+        data: 'ping'
+    }));
+};
+
+ws.onmessage = function(event) {
+    const message = JSON.parse(event.data);
+    console.log('收到消息:', message);
+};
+
+ws.onerror = function(error) {
+    console.error('WebSocket错误:', error);
+};
+
+ws.onclose = function(event) {
+    console.log('WebSocket连接已关闭');
+};
+```
+
+## 13. 故障排除
+
+### 13.1 常见问题
+
+#### 问题1：WebSocket连接失败
+**症状**: `WebSocket connection failed: Connection refused`
+
+**解决方案**:
+```bash
+# 1. 检查服务是否启动
+ps aux | grep whisper
+
+# 2. 检查端口是否监听
+netstat -an | grep 8080
+
+# 3. 检查防火墙设置
+sudo ufw status
+
+# 4. 查看应用日志
+tail -f logs/whisper.log
+```
+
+#### 问题2：数据库连接异常
+**症状**: `Could not create connection to database server`
+
+**解决方案**:
+```bash
+# 1. 检查MySQL服务状态
+systemctl status mysql
+
+# 2. 验证数据库连接
+mysql -h localhost -u root -p
+
+# 3. 检查数据库配置
+cat application.yml | grep datasource
+
+# 4. 验证数据库权限
+SHOW GRANTS FOR 'root'@'localhost';
+```
+
+#### 问题3：IP地理位置获取失败
+**症状**: IP地理位置显示为"未知地区"
+
+**解决方案**:
+```java
+// 1. 检查网络连接
+curl -I http://ip-api.com/json/8.8.8.8
+
+// 2. 使用备用API
+curl -I https://ipapi.co/8.8.8.8/json/
+
+// 3. 检查代理设置
+System.setProperty("http.proxyHost", "proxy.company.com");
+System.setProperty("http.proxyPort", "8080");
+```
+
+### 13.2 性能调优
+
+#### 数据库优化
+```sql
+-- 1. 添加必要索引
+CREATE INDEX idx_cs_customer_create_time ON cs_customer(create_time);
+CREATE INDEX idx_cs_message_conversation_send_time ON cs_message(conversation_id, send_time);
+
+-- 2. 分析慢查询
+SHOW VARIABLES LIKE 'slow_query_log';
+SET GLOBAL slow_query_log = 'ON';
+SET GLOBAL long_query_time = 2;
+
+-- 3. 优化表结构
+ANALYZE TABLE cs_customer;
+OPTIMIZE TABLE cs_message;
+```
+
+#### JVM调优
+```bash
+# JVM参数优化
+java -Xms2g -Xmx4g \
+     -XX:+UseG1GC \
+     -XX:MaxGCPauseMillis=200 \
+     -XX:+HeapDumpOnOutOfMemoryError \
+     -XX:HeapDumpPath=/var/log/whisper/ \
+     -jar whisper-admin.jar
+```
+
+## 14. 扩展开发
+
+### 14.1 自定义消息类型
+```java
+// 1. 扩展消息类型枚举
+public enum MessageType {
+    TEXT("text", "文本消息"),
+    IMAGE("image", "图片消息"),
+    FILE("file", "文件消息"),
+    VOICE("voice", "语音消息"),
+    VIDEO("video", "视频消息"),
+    LOCATION("location", "位置消息"),  // 新增
+    CARD("card", "卡片消息");         // 新增
+}
+
+// 2. 扩展消息处理器
+@Component
+public class LocationMessageHandler implements MessageHandler {
+
+    @Override
+    public boolean support(String messageType) {
+        return "location".equals(messageType);
+    }
+
+    @Override
+    public void handle(CsMessage message) {
+        // 处理位置消息逻辑
+        JSONObject location = JSON.parseObject(message.getContent());
+        double latitude = location.getDouble("latitude");
+        double longitude = location.getDouble("longitude");
+
+        // 保存位置信息或进行地理围栏判断
+        processLocationMessage(message, latitude, longitude);
+    }
+}
+```
+
+### 14.2 自定义客户属性
+```java
+// 1. 扩展客户实体
+public class CsCustomer extends BaseEntity {
+
+    // 原有字段...
+
+    /** 自定义属性JSON */
+    private String customAttributes;
+
+    /** VIP等级详细信息 */
+    private String vipLevel;
+
+    /** 客户偏好设置 */
+    private String preferences;
+
+    // getter/setter方法...
+}
+
+// 2. 扩展客户服务
+@Service
+public class ExtendedCustomerService extends CsCustomerServiceImpl {
+
+    /**
+     * 设置客户自定义属性
+     */
+    public void setCustomAttribute(Long customerId, String key, Object value) {
+        CsCustomer customer = selectCsCustomerByCustomerId(customerId);
+        if (customer != null) {
+            JSONObject attributes = JSON.parseObject(customer.getCustomAttributes());
+            if (attributes == null) {
+                attributes = new JSONObject();
+            }
+            attributes.put(key, value);
+            customer.setCustomAttributes(attributes.toJSONString());
+            updateCsCustomer(customer);
+        }
+    }
+
+    /**
+     * 获取客户自定义属性
+     */
+    public Object getCustomAttribute(Long customerId, String key) {
+        CsCustomer customer = selectCsCustomerByCustomerId(customerId);
+        if (customer != null && StringUtils.isNotEmpty(customer.getCustomAttributes())) {
+            JSONObject attributes = JSON.parseObject(customer.getCustomAttributes());
+            return attributes.get(key);
+        }
+        return null;
+    }
+}
+```
+
+### 14.3 消息插件机制
+```java
+// 1. 消息插件接口
+public interface MessagePlugin {
+
+    /**
+     * 插件名称
+     */
+    String getName();
+
+    /**
+     * 是否支持该消息类型
+     */
+    boolean support(CsMessage message);
+
+    /**
+     * 消息发送前处理
+     */
+    void beforeSend(CsMessage message);
+
+    /**
+     * 消息发送后处理
+     */
+    void afterSend(CsMessage message);
+}
+
+// 2. 敏感词过滤插件
+@Component
+public class SensitiveWordFilterPlugin implements MessagePlugin {
+
+    @Override
+    public String getName() {
+        return "敏感词过滤插件";
+    }
+
+    @Override
+    public boolean support(CsMessage message) {
+        return "text".equals(message.getMessageType());
+    }
+
+    @Override
+    public void beforeSend(CsMessage message) {
+        String content = message.getContent();
+        String filteredContent = filterSensitiveWords(content);
+        message.setContent(filteredContent);
+    }
+
+    @Override
+    public void afterSend(CsMessage message) {
+        // 记录敏感词过滤日志
+        logSensitiveWordFilter(message);
+    }
+
+    private String filterSensitiveWords(String content) {
+        // 敏感词过滤逻辑
+        return content.replaceAll("敏感词", "***");
+    }
+}
+```
+
+## 15. 最佳实践
+
+### 15.1 代码规范
+- **命名规范**: 遵循Java命名约定，类名使用PascalCase，方法名使用camelCase
+- **注释规范**: 重要方法和类添加完整的JavaDoc注释
+- **异常处理**: 统一的异常处理机制，避免空指针异常
+- **日志规范**: 使用SLF4J日志框架，合理设置日志级别
+
+### 15.2 安全建议
+- **输入验证**: 严格验证所有用户输入，防止XSS和SQL注入
+- **权限控制**: 实施最小权限原则，定期审查权限设置
+- **数据加密**: 敏感数据加密存储和传输
+- **安全更新**: 定期更新依赖库版本，修复安全漏洞
+
+### 15.3 性能建议
+- **数据库优化**: 合理使用索引，避免N+1查询问题
+- **缓存策略**: 热点数据使用缓存，减少数据库压力
+- **异步处理**: 耗时操作使用异步处理，提高响应速度
+- **资源管理**: 及时释放资源，避免内存泄漏
+
+---
+
+## 附录
+
+### A. 数据字典
+
+#### A.1 客户类型 (customer_type)
+- `1`: 个人客户
+- `2`: 企业客户
+
+#### A.2 客户等级 (level)
+- `1`: 普通客户
+- `2`: VIP客户
+- `3`: SVIP客户
+
+#### A.3 会话状态 (status)
+- `0`: 待分配
+- `1`: 进行中
+- `2`: 已结束
+- `3`: 已转接
+
+#### A.4 消息类型 (message_type)
+- `text`: 文本消息
+- `image`: 图片消息
+- `file`: 文件消息
+- `voice`: 语音消息
+- `video`: 视频消息
+
+### B. API错误码
+
+| 错误码 | 错误信息 | 说明 |
+|--------|----------|------|
+| 200 | 操作成功 | 请求处理成功 |
+| 400 | 参数错误 | 请求参数不正确 |
+| 401 | 未授权 | 需要身份验证 |
+| 403 | 禁止访问 | 权限不足 |
+| 404 | 资源不存在 | 请求的资源不存在 |
+| 500 | 系统异常 | 服务器内部错误 |
+| 1001 | 客户不存在 | 指定的客户ID不存在 |
+| 1002 | 会话不存在 | 指定的会话ID不存在 |
+| 1003 | 消息发送失败 | 消息发送过程中出现错误 |
+
+### C. 版本历史
+
+| 版本 | 日期 | 更新内容 |
+|------|------|----------|
+| 3.9.0 | 2025-01-08 | 初始版本，包含基础客服功能 |
+| 3.9.1 | 2025-01-15 | 新增IP地理位置功能 |
+| 3.9.2 | 2025-01-22 | 优化WebSocket性能 |
+
+---
+
+*本文档详细介绍了Whisper Customer模块的技术架构、功能特性、API设计和部署指南，为开发和维护提供了全面的技术参考。如有疑问，请联系技术团队。*
+```
+```

@@ -74,6 +74,7 @@ public interface ICsCustomerService
      */
     public int deleteCsCustomerByCustomerIds(Long[] customerIds);
 
+
     /**
      * 删除客户信息信息
      * 
@@ -156,8 +157,29 @@ public interface ICsCustomerService
 
     /**
      * 生成客户编号
-     * 
+     *
      * @return 客户编号
      */
     public String generateCustomerNo();
+
+    /**
+     * 生成智能访客名称
+     *
+     * @return 访客名称
+     */
+    public String generateGuestName();
+
+    /**
+     * 生成简化访客名称
+     *
+     * @return 简化访客名称
+     */
+    public String generateSimpleGuestName();
+
+    /**
+     * 生成个性化访客名称
+     *
+     * @return 个性化访客名称
+     */
+    public String generatePersonalizedGuestName();
 }

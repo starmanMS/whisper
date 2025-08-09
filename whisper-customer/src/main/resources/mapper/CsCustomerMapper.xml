@@ -31,15 +31,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateBy"         column="update_by"          />
         <result property="updateTime"       column="update_time"        />
         <result property="remark"           column="remark"             />
-        <result property="reserved1"        column="reserved1"          />
-        <result property="reserved2"        column="reserved2"          />
+        <result property="ipAddress"        column="ip_address"          />
+        <result property="ipLocation"       column="ip_location"          />
         <result property="reserved3"        column="reserved3"          />
         <result property="extField1"        column="ext_field1"         />
         <result property="extField2"        column="ext_field2"         />
     </resultMap>
 
     <sql id="selectCsCustomerVo">
-        select customer_id, customer_no, customer_name, customer_type, phone, email, wechat, qq, company, industry, region, address, birthday, gender, avatar, level, source, tags, last_contact_time, status, del_flag, create_by, create_time, update_by, update_time, remark, reserved1, reserved2, reserved3, ext_field1, ext_field2 from cs_customer
+        select customer_id, customer_no, customer_name, customer_type, phone, email, wechat, qq, company, industry, region, address, birthday, gender, avatar, level, source, tags, last_contact_time, status, del_flag, create_by, create_time, update_by, update_time, remark, ip_address, ip_location, reserved3, ext_field1, ext_field2 from cs_customer
     </sql>
 
     <select id="selectCsCustomerList" parameterType="CsCustomer" resultMap="CsCustomerResult">
@@ -153,8 +153,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">update_by,</if>
             <if test="updateTime != null">update_time,</if>
             <if test="remark != null">remark,</if>
-            <if test="reserved1 != null">reserved1,</if>
-            <if test="reserved2 != null">reserved2,</if>
+            <if test="ipAddress != null">ip_address,</if>
+            <if test="ipLocation != null">ip_location,</if>
             <if test="reserved3 != null">reserved3,</if>
             <if test="extField1 != null">ext_field1,</if>
             <if test="extField2 != null">ext_field2,</if>
@@ -185,8 +185,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">#{updateBy},</if>
             <if test="updateTime != null">#{updateTime},</if>
             <if test="remark != null">#{remark},</if>
-            <if test="reserved1 != null">#{reserved1},</if>
-            <if test="reserved2 != null">#{reserved2},</if>
+            <if test="ipAddress != null">#{ipAddress},</if>
+            <if test="ipLocation != null">#{ipLocation},</if>
             <if test="reserved3 != null">#{reserved3},</if>
             <if test="extField1 != null">#{extField1},</if>
             <if test="extField2 != null">#{extField2},</if>
@@ -221,8 +221,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
             <if test="remark != null">remark = #{remark},</if>
-            <if test="reserved1 != null">reserved1 = #{reserved1},</if>
-            <if test="reserved2 != null">reserved2 = #{reserved2},</if>
+            <if test="ipAddress != null">ip_address = #{ipAddress},</if>
+            <if test="ipLocation != null">ip_location = #{ipLocation},</if>
             <if test="reserved3 != null">reserved3 = #{reserved3},</if>
             <if test="extField1 != null">ext_field1 = #{extField1},</if>
             <if test="extField2 != null">ext_field2 = #{extField2},</if>

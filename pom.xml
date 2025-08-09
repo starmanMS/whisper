@@ -218,6 +218,13 @@
                 <version>${whisper.version}</version>
             </dependency>
 
+            <!-- 客服模块-->
+            <dependency>
+                <groupId>com.whisper</groupId>
+                <artifactId>whisper-customer</artifactId>
+                <version>${whisper.version}</version>
+            </dependency>
+
         </dependencies>
     </dependencyManagement>
 

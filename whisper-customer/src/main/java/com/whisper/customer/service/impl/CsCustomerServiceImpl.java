@@ -153,6 +153,8 @@ public class CsCustomerServiceImpl implements ICsCustomerService
         return csCustomerMapper.deleteCsCustomerByCustomerIds(customerIds);
     }
 
+
+
     /**
      * 删除客户信息信息
      * 
@@ -353,5 +355,81 @@ public class CsCustomerServiceImpl implements ICsCustomerService
     public String generateCustomerNo()
     {
         return "CUS" + DateUtils.dateTimeNow("yyyyMMddHHmmss") + IdUtils.fastSimpleUUID().substring(0, 4);
+    }
+
+    /**
+     * 生成智能访客名称
+     * 格式：访客 + 时间标识 + 随机标识符
+     * 示例：访客1428A3、访客0809B7、访客2156C1
+     *
+     * @return 访客名称
+     */
+    @Override
+    public String generateGuestName()
+    {
+        // 获取当前时间的小时和分钟（4位数字）
+        String timeIdentifier = DateUtils.dateTimeNow("HHmm");
+
+        // 生成随机字母（A-Z）
+        String[] letters = {"A", "B", "C", "D", "E", "F", "G", "H", "J", "K", "L", "M", "N", "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"};
+        String randomLetter = letters[(int)(Math.random() * letters.length)];
+
+        // 生成随机数字（1-9）
+        int randomNumber = (int)(Math.random() * 9) + 1;
+
+        // 组合生成访客名称：访客 + 时间标识 + 字母 + 数字
+        return "访客" + timeIdentifier + randomLetter + randomNumber;
+    }
+
+    /**
+     * 生成简化访客名称（备用方案）
+     * 格式：访客 + 日期 + 序号
+     * 示例：访客0809_01、访客0809_02
+     *
+     * @return 简化访客名称
+     */
+    @Override
+    public String generateSimpleGuestName()
+    {
+        // 获取当前日期（月日）
+        String dateIdentifier = DateUtils.dateTimeNow("MMdd");
+
+        // 生成随机序号（01-99）
+        int sequence = (int)(Math.random() * 99) + 1;
+        String sequenceStr = String.format("%02d", sequence);
+
+        return "访客" + dateIdentifier + "_" + sequenceStr;
+    }
+
+    /**
+     * 生成个性化访客名称（高级方案）
+     * 根据时间段生成不同风格的名称
+     *
+     * @return 个性化访客名称
+     */
+    @Override
+    public String generatePersonalizedGuestName()
+    {
+        int hour = Integer.parseInt(DateUtils.dateTimeNow("HH"));
+        String timePrefix;
+
+        // 根据时间段选择不同的前缀
+        if (hour >= 6 && hour < 12) {
+            timePrefix = "晨客";  // 早晨访客
+        } else if (hour >= 12 && hour < 18) {
+            timePrefix = "午客";  // 下午访客
+        } else if (hour >= 18 && hour < 22) {
+            timePrefix = "晚客";  // 晚上访客
+        } else {
+            timePrefix = "夜客";  // 深夜访客
+        }
+
+        // 生成时间标识（分钟 + 秒）
+        String timeIdentifier = DateUtils.dateTimeNow("mmss");
+
+        // 生成随机字母
+        String randomChar = IdUtils.fastSimpleUUID().substring(0, 1).toUpperCase();
+
+        return timePrefix + timeIdentifier + randomChar;
     }
 }
