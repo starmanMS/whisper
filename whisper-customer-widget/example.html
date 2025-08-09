@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whisper Chat Widget - 使用示例</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    .title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: #1f2937;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      color: #6b7280;
+      line-height: 1.6;
+    }
+    .demo-section {
+      margin-bottom: 40px;
+    }
+    .section-title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #374151;
+    }
+    .button-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+    .code-block {
+      background: #1f2937;
+      color: #f3f4f6;
+      padding: 20px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      overflow-x: auto;
+      margin: 20px 0;
+    }
+    .status {
+      padding: 12px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    .status.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .status.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    .status.info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 class="title">Whisper Chat Widget</h1>
+      <p class="subtitle">
+        智能客服聊天组件使用示例<br>
+        支持实时消息、文件上传、表情符号等功能
+      </p>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="section-title">基本使用</h2>
+      <div class="button-group">
+        <button class="btn btn-primary" onclick="initWidget()">初始化 Widget</button>
+        <button class="btn btn-secondary" onclick="openChat()">打开聊天</button>
+        <button class="btn btn-secondary" onclick="closeChat()">关闭聊天</button>
+        <button class="btn btn-secondary" onclick="getStatus()">获取状态</button>
+      </div>
+      <div id="status-display"></div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="section-title">主题和位置</h2>
+      <div class="button-group">
+        <button class="btn btn-secondary" onclick="setTheme('light')">浅色主题</button>
+        <button class="btn btn-secondary" onclick="setTheme('dark')">深色主题</button>
+        <button class="btn btn-secondary" onclick="setPosition('bottom-right')">右下角</button>
+        <button class="btn btn-secondary" onclick="setPosition('bottom-left')">左下角</button>
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="section-title">代码示例</h2>
+      <div class="code-block">
+// 基本初始化
+WhisperChat.init({
+  apiUrl: 'http://localhost:8080/api',
+  websocketUrl: 'ws://localhost:8080/websocket',
+  customerId: 'customer_123',
+  customerName: '张三',
+  theme: 'light',
+  position: 'bottom-right'
+});
+
+// 打开聊天对话框
+WhisperChat.open();
+
+// 关闭聊天对话框
+WhisperChat.close();
+
+// 设置主题
+WhisperChat.setTheme('dark');
+
+// 设置位置
+WhisperChat.setPosition('bottom-left');
+
+// 获取状态
+const state = WhisperChat.getState();
+console.log(state);
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="section-title">HTML 集成</h2>
+      <div class="code-block">
+&lt;!-- 引入 Widget 文件 --&gt;
+&lt;script src="./dist/whisper-chat-widget.umd.cjs"&gt;&lt;/script&gt;
+&lt;link rel="stylesheet" href="./dist/style.css"&gt;
+
+&lt;!-- 初始化 Widget --&gt;
+&lt;script&gt;
+  WhisperChat.init({
+    apiUrl: 'http://localhost:8080/api',
+    websocketUrl: 'ws://localhost:8080/websocket',
+    customerId: 'your_customer_id',
+    customerName: '客户姓名'
+  });
+&lt;/script&gt;
+      </div>
+    </div>
+
+    <div class="demo-section">
+      <h2 class="section-title">配置参数说明</h2>
+      <div class="code-block">
+{
+  apiUrl: 'string',        // 必需：API 服务器地址
+  websocketUrl: 'string',  // 必需：WebSocket 服务器地址
+  customerId: 'string',    // 必需：客户唯一标识
+  customerName: 'string',  // 可选：客户姓名
+  theme: 'light|dark',     // 可选：主题，默认 'light'
+  position: 'bottom-right|bottom-left'  // 可选：位置，默认 'bottom-right'
+}
+      </div>
+    </div>
+  </div>
+
+  <!-- 引入 Widget -->
+  <script src="./dist/whisper-chat-widget.umd.cjs"></script>
+  <link rel="stylesheet" href="./dist/style.css">
+
+  <script>
+    let widgetInitialized = false;
+
+    function showStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('status-display');
+      statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+    }
+
+    function initWidget() {
+      try {
+        if (widgetInitialized) {
+          showStatus('Widget 已经初始化', 'info');
+          return;
+        }
+
+        WhisperChat.init({
+          apiUrl: 'http://localhost:8080/api',
+          websocketUrl: 'ws://localhost:8080/websocket',
+          customerId: 'demo_customer_' + Date.now(),
+          customerName: '演示用户',
+          theme: 'light',
+          position: 'bottom-right'
+        });
+
+        widgetInitialized = true;
+        showStatus('Widget 初始化成功！', 'success');
+      } catch (error) {
+        showStatus('Widget 初始化失败：' + error.message, 'error');
+      }
+    }
+
+    function openChat() {
+      if (!widgetInitialized) {
+        showStatus('请先初始化 Widget', 'error');
+        return;
+      }
+      WhisperChat.open();
+      showStatus('聊天对话框已打开', 'success');
+    }
+
+    function closeChat() {
+      if (!widgetInitialized) {
+        showStatus('请先初始化 Widget', 'error');
+        return;
+      }
+      WhisperChat.close();
+      showStatus('聊天对话框已关闭', 'info');
+    }
+
+    function setTheme(theme) {
+      if (!widgetInitialized) {
+        showStatus('请先初始化 Widget', 'error');
+        return;
+      }
+      WhisperChat.setTheme(theme);
+      showStatus(`主题已切换为：${theme}`, 'success');
+    }
+
+    function setPosition(position) {
+      if (!widgetInitialized) {
+        showStatus('请先初始化 Widget', 'error');
+        return;
+      }
+      WhisperChat.setPosition(position);
+      showStatus(`位置已切换为：${position}`, 'success');
+    }
+
+    function getStatus() {
+      if (!widgetInitialized) {
+        showStatus('请先初始化 Widget', 'error');
+        return;
+      }
+      const state = WhisperChat.getState();
+      showStatus(`当前状态：${JSON.stringify(state, null, 2)}`, 'info');
+    }
+
+    // 页面加载完成后自动初始化
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        initWidget();
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

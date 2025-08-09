@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whisper Chat Widget - 简单测试版本</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      padding: 40px;
+      border-radius: 12px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    .title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+      color: #1f2937;
+      text-align: center;
+    }
+    .subtitle {
+      font-size: 1.1rem;
+      color: #6b7280;
+      text-align: center;
+      margin-bottom: 40px;
+      line-height: 1.6;
+    }
+    .status {
+      padding: 15px;
+      margin: 15px 0;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    .status.success {
+      background: #d1fae5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
+    }
+    .status.error {
+      background: #fee2e2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+    }
+    .status.info {
+      background: #dbeafe;
+      color: #1e40af;
+      border: 1px solid #93c5fd;
+    }
+    .button-group {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 30px 0;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background: #3b82f6;
+      color: white;
+    }
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+    .btn-secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .btn-secondary:hover {
+      background: #e5e7eb;
+    }
+    .debug-info {
+      background: #1f2937;
+      color: #f3f4f6;
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      font-size: 12px;
+      white-space: pre-wrap;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .highlight {
+      background: #fef3c7;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #f59e0b;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1 class="title">🚀 Whisper Chat Widget</h1>
+    <p class="subtitle">
+      简单测试版本 - 验证 UMD 导出和全局变量<br>
+      点击下方按钮测试功能，成功后会在右下角显示聊天按钮
+    </p>
+    
+    <div id="status-display">
+      <div class="status info">正在检查 WhisperChat 对象...</div>
+    </div>
+    
+    <div class="button-group">
+      <button class="btn btn-primary" onclick="testWhisperChat()">🔍 检查对象</button>
+      <button class="btn btn-primary" onclick="initWidget()">🚀 初始化 Widget</button>
+      <button class="btn btn-secondary" onclick="openChat()">📖 打开聊天</button>
+      <button class="btn btn-secondary" onclick="closeChat()">❌ 关闭聊天</button>
+      <button class="btn btn-secondary" onclick="getState()">📊 获取状态</button>
+      <button class="btn btn-secondary" onclick="destroyWidget()">🗑️ 销毁 Widget</button>
+    </div>
+    
+    <div class="highlight">
+      <strong>测试步骤：</strong><br>
+      1. 页面加载后会自动检查 WhisperChat 对象<br>
+      2. 点击"检查对象"验证对象是否正确加载<br>
+      3. 点击"初始化 Widget"创建聊天按钮<br>
+      4. 查看右下角是否出现蓝色的聊天按钮 💬<br>
+      5. 点击聊天按钮测试交互功能
+    </div>
+    
+    <div id="debug-info" class="debug-info"></div>
+  </div>
+
+  <!-- 引入简单测试版本的 Widget -->
+  <script src="./dist/whisper-chat-widget-simple.umd.cjs"></script>
+
+  <script>
+    let widgetInitialized = false;
+
+    function updateStatus(message, type = 'info') {
+      const statusDiv = document.getElementById('status-display');
+      statusDiv.innerHTML = `<div class="status ${type}">${message}</div>`;
+    }
+
+    function updateDebugInfo(info) {
+      const debugDiv = document.getElementById('debug-info');
+      const timestamp = new Date().toLocaleTimeString();
+      debugDiv.textContent += `[${timestamp}] ${info}\n`;
+      debugDiv.scrollTop = debugDiv.scrollHeight;
+    }
+
+    function testWhisperChat() {
+      updateDebugInfo('=== 开始检查 WhisperChat 对象 ===');
+      
+      // 检查全局对象
+      updateDebugInfo('检查 window.WhisperChat...');
+      if (typeof window.WhisperChat === 'undefined') {
+        updateStatus('❌ window.WhisperChat 未定义', 'error');
+        updateDebugInfo('ERROR: window.WhisperChat is undefined');
+        return;
+      }
+
+      // 检查直接引用
+      updateDebugInfo('检查 WhisperChat...');
+      if (typeof WhisperChat === 'undefined') {
+        updateStatus('❌ WhisperChat 未定义', 'error');
+        updateDebugInfo('ERROR: WhisperChat is undefined');
+        return;
+      }
+
+      updateStatus('✅ WhisperChat 对象检查通过！', 'success');
+      updateDebugInfo('SUCCESS: WhisperChat object is available');
+      updateDebugInfo('WhisperChat type: ' + typeof WhisperChat);
+      updateDebugInfo('WhisperChat === window.WhisperChat: ' + (WhisperChat === window.WhisperChat));
+      
+      // 检查方法
+      const methods = ['init', 'open', 'close', 'destroy', 'getState'];
+      methods.forEach(method => {
+        if (typeof WhisperChat[method] === 'function') {
+          updateDebugInfo(`✓ ${method}() method available`);
+        } else {
+          updateDebugInfo(`✗ ${method}() method missing`);
+        }
+      });
+
+      // 检查静态方法
+      try {
+        const version = WhisperChat.constructor.getVersion();
+        updateDebugInfo('Version: ' + version);
+      } catch (e) {
+        updateDebugInfo('Version check failed: ' + e.message);
+      }
+
+      try {
+        const compatibility = WhisperChat.constructor.checkCompatibility();
+        updateDebugInfo('Browser compatibility: ' + compatibility);
+      } catch (e) {
+        updateDebugInfo('Compatibility check failed: ' + e.message);
+      }
+
+      updateDebugInfo('=== WhisperChat 对象检查完成 ===');
+    }
+
+    function initWidget() {
+      updateDebugInfo('=== 开始初始化 Widget ===');
+      
+      if (typeof WhisperChat === 'undefined') {
+        updateStatus('❌ WhisperChat 未加载', 'error');
+        updateDebugInfo('ERROR: WhisperChat not loaded');
+        return;
+      }
+
+      if (widgetInitialized) {
+        updateStatus('⚠️ Widget 已经初始化', 'info');
+        updateDebugInfo('WARNING: Widget already initialized');
+        return;
+      }
+
+      try {
+        const result = WhisperChat.init({
+          apiUrl: 'http://localhost:8080/api',
+          websocketUrl: 'ws://localhost:8080/websocket',
+          customerId: 'test_customer_' + Date.now(),
+          customerName: '测试用户',
+          theme: 'light',
+          position: 'bottom-right'
+        });
+
+        widgetInitialized = true;
+        updateStatus('✅ Widget 初始化成功！请查看右下角的聊天按钮', 'success');
+        updateDebugInfo('SUCCESS: Widget initialized');
+        updateDebugInfo('Init result: ' + (result === WhisperChat ? 'returned self' : 'returned: ' + result));
+        
+        // 检查按钮是否创建
+        setTimeout(() => {
+          const chatButton = document.getElementById('simple-whisper-chat-button');
+          if (chatButton) {
+            updateDebugInfo('SUCCESS: Chat button found in DOM');
+            updateStatus('✅ 聊天按钮已创建！点击右下角的 💬 按钮测试', 'success');
+          } else {
+            updateDebugInfo('WARNING: Chat button not found in DOM');
+          }
+        }, 100);
+
+      } catch (error) {
+        updateStatus('❌ Widget 初始化失败：' + error.message, 'error');
+        updateDebugInfo('ERROR: ' + error.message);
+        updateDebugInfo('Stack: ' + error.stack);
+        console.error('Widget initialization error:', error);
+      }
+
+      updateDebugInfo('=== Widget 初始化完成 ===');
+    }
+
+    function openChat() {
+      updateDebugInfo('=== 打开聊天 ===');
+      
+      if (!widgetInitialized) {
+        updateStatus('❌ 请先初始化 Widget', 'error');
+        updateDebugInfo('ERROR: Widget not initialized');
+        return;
+      }
+
+      try {
+        WhisperChat.open();
+        updateStatus('✅ 聊天对话框已打开', 'success');
+        updateDebugInfo('SUCCESS: Chat dialog opened');
+      } catch (error) {
+        updateStatus('❌ 打开聊天失败：' + error.message, 'error');
+        updateDebugInfo('ERROR: ' + error.message);
+      }
+    }
+
+    function closeChat() {
+      updateDebugInfo('=== 关闭聊天 ===');
+      
+      if (!widgetInitialized) {
+        updateStatus('❌ 请先初始化 Widget', 'error');
+        updateDebugInfo('ERROR: Widget not initialized');
+        return;
+      }
+
+      try {
+        WhisperChat.close();
+        updateStatus('✅ 聊天对话框已关闭', 'info');
+        updateDebugInfo('SUCCESS: Chat dialog closed');
+      } catch (error) {
+        updateStatus('❌ 关闭聊天失败：' + error.message, 'error');
+        updateDebugInfo('ERROR: ' + error.message);
+      }
+    }
+
+    function getState() {
+      updateDebugInfo('=== 获取状态 ===');
+      
+      if (!widgetInitialized) {
+        updateStatus('❌ 请先初始化 Widget', 'error');
+        updateDebugInfo('ERROR: Widget not initialized');
+        return;
+      }
+
+      try {
+        const state = WhisperChat.getState();
+        updateStatus('✅ 状态获取成功', 'success');
+        updateDebugInfo('Widget state: ' + JSON.stringify(state, null, 2));
+      } catch (error) {
+        updateStatus('❌ 获取状态失败：' + error.message, 'error');
+        updateDebugInfo('ERROR: ' + error.message);
+      }
+    }
+
+    function destroyWidget() {
+      updateDebugInfo('=== 销毁 Widget ===');
+      
+      if (!widgetInitialized) {
+        updateStatus('❌ Widget 未初始化', 'error');
+        updateDebugInfo('ERROR: Widget not initialized');
+        return;
+      }
+
+      try {
+        WhisperChat.destroy();
+        widgetInitialized = false;
+        updateStatus('✅ Widget 已销毁', 'info');
+        updateDebugInfo('SUCCESS: Widget destroyed');
+      } catch (error) {
+        updateStatus('❌ 销毁 Widget 失败：' + error.message, 'error');
+        updateDebugInfo('ERROR: ' + error.message);
+      }
+    }
+
+    // 页面加载完成后自动检查
+    window.addEventListener('load', () => {
+      updateDebugInfo('Page loaded, starting automatic check...');
+      
+      setTimeout(() => {
+        testWhisperChat();
+      }, 100);
+    });
+
+    // 监听错误
+    window.addEventListener('error', (event) => {
+      updateDebugInfo('JavaScript Error: ' + event.error.message);
+      updateStatus('❌ JavaScript 错误：' + event.error.message, 'error');
+    });
+
+    // 监听未处理的Promise拒绝
+    window.addEventListener('unhandledrejection', (event) => {
+      updateDebugInfo('Unhandled Promise Rejection: ' + event.reason);
+      updateStatus('❌ Promise 错误：' + event.reason, 'error');
+    });
+
+    // 初始状态
+    updateDebugInfo('Simple test page initialized');
+  </script>
+</body>
+</html>

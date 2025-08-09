@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消息发送功能测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+        .test-section h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .button-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-success { background: #28a745; color: white; }
+        .btn-warning { background: #ffc107; color: #212529; }
+        .btn-danger { background: #dc3545; color: white; }
+        .btn:hover { opacity: 0.8; transform: translateY(-1px); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: 500;
+        }
+        .status.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .status.error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .status.info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .status.warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .log-container {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .log-entry {
+            margin-bottom: 5px;
+            padding: 2px 0;
+        }
+        .log-entry.error { color: #dc3545; }
+        .log-entry.success { color: #28a745; }
+        .log-entry.info { color: #17a2b8; }
+        .log-entry.warning { color: #ffc107; }
+        .test-input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+        .widget-container {
+            position: relative;
+            height: 500px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="test-header">
+            <h1>🧪 消息发送功能测试</h1>
+            <p>专门用于测试和调试聊天Widget的消息发送功能</p>
+        </div>
+
+        <!-- 初始化测试 -->
+        <div class="test-section">
+            <h3>1. Widget初始化</h3>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="initializeWidget()">初始化Widget</button>
+                <button class="btn btn-warning" onclick="openChat()">打开聊天</button>
+                <button class="btn btn-danger" onclick="destroyWidget()">销毁Widget</button>
+            </div>
+            <div id="initStatus" class="status info">等待初始化...</div>
+        </div>
+
+        <!-- 消息发送测试 -->
+        <div class="test-section">
+            <h3>2. 消息发送测试</h3>
+            <input type="text" id="testMessage" class="test-input" placeholder="输入测试消息..." value="这是一条测试消息">
+            <div class="button-group">
+                <button class="btn btn-success" onclick="sendTestMessage()">发送测试消息</button>
+                <button class="btn btn-primary" onclick="sendMultipleMessages()">发送多条消息</button>
+                <button class="btn btn-warning" onclick="sendEmptyMessage()">发送空消息</button>
+                <button class="btn btn-danger" onclick="sendLongMessage()">发送长消息</button>
+            </div>
+            <div id="sendStatus" class="status info">等待发送...</div>
+        </div>
+
+        <!-- 事件监听测试 -->
+        <div class="test-section">
+            <h3>3. 事件监听测试</h3>
+            <div class="button-group">
+                <button class="btn btn-primary" onclick="startEventListening()">开始监听事件</button>
+                <button class="btn btn-warning" onclick="stopEventListening()">停止监听</button>
+                <button class="btn btn-success" onclick="triggerManualSend()">手动触发发送</button>
+            </div>
+            <div id="eventStatus" class="status info">事件监听未启动</div>
+        </div>
+
+        <!-- Widget显示区域 -->
+        <div class="test-section">
+            <h3>4. Widget显示区域</h3>
+            <div class="widget-container" id="widgetContainer">
+                Widget将在这里显示
+            </div>
+        </div>
+
+        <!-- 调试日志 -->
+        <div class="test-section">
+            <h3>5. 调试日志</h3>
+            <div class="button-group">
+                <button class="btn btn-warning" onclick="clearLogs()">清空日志</button>
+                <button class="btn btn-primary" onclick="exportLogs()">导出日志</button>
+            </div>
+            <div id="debugLogs" class="log-container">
+                <div class="log-entry info">测试页面已加载，等待操作...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 加载Widget脚本 -->
+    <script src="./dist/whisper-chat-widget.js"></script>
+
+    <script>
+        let widgetInitialized = false;
+        let eventListening = false;
+        let chatInstance = null;
+
+        // 日志函数
+        function addLog(message, type = 'info') {
+            const logsContainer = document.getElementById('debugLogs');
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry ${type}`;
+            logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logsContainer.appendChild(logEntry);
+            logsContainer.scrollTop = logsContainer.scrollHeight;
+            
+            // 同时输出到控制台
+            console.log(`%c[${type.toUpperCase()}] ${message}`, getLogStyle(type));
+        }
+
+        function getLogStyle(type) {
+            const styles = {
+                info: 'color: #17a2b8;',
+                success: 'color: #28a745; font-weight: bold;',
+                error: 'color: #dc3545; font-weight: bold;',
+                warning: 'color: #ffc107; font-weight: bold;'
+            };
+            return styles[type] || styles.info;
+        }
+
+        // 更新状态
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+            addLog(`${elementId}: ${message}`, type);
+        }
+
+        // 初始化Widget
+        function initializeWidget() {
+            try {
+                if (typeof WhisperChat === 'undefined') {
+                    updateStatus('initStatus', '❌ WhisperChat未加载', 'error');
+                    return;
+                }
+
+                const config = {
+                    apiUrl: 'http://localhost:8080',
+                    websocketUrl: 'ws://localhost:8080/websocket',
+                    customerId: `test_${Date.now()}`,
+                    customerName: '消息测试用户',
+                    theme: 'light',
+                    position: 'bottom-right'
+                };
+
+                addLog('开始初始化Widget...');
+                addLog('配置: ' + JSON.stringify(config, null, 2));
+
+                WhisperChat.init(config);
+                widgetInitialized = true;
+                chatInstance = WhisperChat;
+                
+                updateStatus('initStatus', '✅ Widget初始化成功', 'success');
+
+                // 监听Widget内部事件
+                if (eventListening) {
+                    startEventListening();
+                }
+
+            } catch (error) {
+                updateStatus('initStatus', `❌ 初始化失败: ${error.message}`, 'error');
+                addLog(`初始化错误: ${error.stack}`, 'error');
+            }
+        }
+
+        // 打开聊天
+        function openChat() {
+            if (!widgetInitialized) {
+                updateStatus('initStatus', '⚠️ 请先初始化Widget', 'warning');
+                return;
+            }
+
+            try {
+                if (WhisperChat.open) {
+                    WhisperChat.open();
+                    addLog('聊天窗口已打开', 'success');
+                } else {
+                    addLog('open方法不可用', 'warning');
+                }
+            } catch (error) {
+                addLog(`打开聊天失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 销毁Widget
+        function destroyWidget() {
+            try {
+                if (WhisperChat.destroy) {
+                    WhisperChat.destroy();
+                    widgetInitialized = false;
+                    updateStatus('initStatus', '✅ Widget已销毁', 'success');
+                } else {
+                    addLog('destroy方法不可用', 'warning');
+                }
+            } catch (error) {
+                addLog(`销毁失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 发送测试消息
+        function sendTestMessage() {
+            const message = document.getElementById('testMessage').value;
+            if (!message.trim()) {
+                updateStatus('sendStatus', '⚠️ 请输入消息内容', 'warning');
+                return;
+            }
+
+            addLog(`准备发送消息: "${message}"`);
+            
+            // 模拟点击发送按钮
+            simulateMessageSend(message);
+        }
+
+        // 发送多条消息
+        function sendMultipleMessages() {
+            const messages = [
+                '第一条测试消息',
+                '第二条测试消息',
+                '第三条测试消息'
+            ];
+
+            messages.forEach((msg, index) => {
+                setTimeout(() => {
+                    addLog(`发送第${index + 1}条消息: "${msg}"`);
+                    simulateMessageSend(msg);
+                }, index * 1000);
+            });
+        }
+
+        // 发送空消息
+        function sendEmptyMessage() {
+            addLog('尝试发送空消息');
+            simulateMessageSend('');
+        }
+
+        // 发送长消息
+        function sendLongMessage() {
+            const longMessage = '这是一条很长的测试消息，'.repeat(20) + '用于测试长文本的处理能力。';
+            addLog(`发送长消息 (${longMessage.length} 字符)`);
+            simulateMessageSend(longMessage);
+        }
+
+        // 模拟消息发送
+        function simulateMessageSend(message) {
+            try {
+                // 查找消息输入框
+                const messageInput = document.querySelector('.whisper-chat-text-input');
+                const sendButton = document.querySelector('.whisper-chat-send-button');
+
+                if (!messageInput || !sendButton) {
+                    addLog('未找到消息输入框或发送按钮', 'error');
+                    updateStatus('sendStatus', '❌ 未找到输入组件', 'error');
+                    return;
+                }
+
+                // 设置消息内容
+                messageInput.value = message;
+                messageInput.dispatchEvent(new Event('input', { bubbles: true }));
+
+                addLog('已设置消息内容，准备点击发送按钮');
+
+                // 点击发送按钮
+                sendButton.click();
+
+                updateStatus('sendStatus', '✅ 已触发发送', 'success');
+
+            } catch (error) {
+                addLog(`模拟发送失败: ${error.message}`, 'error');
+                updateStatus('sendStatus', `❌ 发送失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 开始事件监听
+        function startEventListening() {
+            eventListening = true;
+            updateStatus('eventStatus', '✅ 事件监听已启动', 'success');
+
+            // 监听DOM变化
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList') {
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                if (node.classList && node.classList.contains('whisper-chat-message')) {
+                                    addLog('检测到新消息元素', 'info');
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+
+            addLog('DOM变化监听已启动', 'info');
+        }
+
+        // 停止事件监听
+        function stopEventListening() {
+            eventListening = false;
+            updateStatus('eventStatus', '⏹️ 事件监听已停止', 'warning');
+        }
+
+        // 手动触发发送
+        function triggerManualSend() {
+            addLog('手动触发消息发送事件');
+            
+            // 创建自定义事件
+            const sendEvent = new CustomEvent('whisper-send-message', {
+                detail: {
+                    content: '手动触发的测试消息',
+                    type: 'text',
+                    timestamp: Date.now()
+                }
+            });
+
+            document.dispatchEvent(sendEvent);
+            addLog('已派发自定义发送事件', 'info');
+        }
+
+        // 清空日志
+        function clearLogs() {
+            document.getElementById('debugLogs').innerHTML = '';
+            addLog('日志已清空', 'info');
+        }
+
+        // 导出日志
+        function exportLogs() {
+            const logs = document.getElementById('debugLogs').innerText;
+            const blob = new Blob([logs], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `whisper-chat-logs-${new Date().toISOString().slice(0, 19)}.txt`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addLog('日志已导出', 'success');
+        }
+
+        // 监听全局错误
+        window.addEventListener('error', function(event) {
+            addLog(`全局错误: ${event.error.message}`, 'error');
+        });
+
+        window.addEventListener('unhandledrejection', function(event) {
+            addLog(`未处理的Promise错误: ${event.reason}`, 'error');
+        });
+
+        // 页面加载完成
+        document.addEventListener('DOMContentLoaded', function() {
+            addLog('测试页面加载完成', 'success');
+            addLog('请按顺序执行: 1.初始化Widget → 2.打开聊天 → 3.发送测试消息', 'info');
+        });
+    </script>
+</body>
+</html>

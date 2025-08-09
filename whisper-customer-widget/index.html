@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Whisper Chat Widget - Demo</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+    .demo-container {
+      max-width: 800px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+    }
+    .demo-title {
+      font-size: 2.5rem;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #1f2937;
+    }
+    .demo-description {
+      font-size: 1.1rem;
+      line-height: 1.6;
+      color: #6b7280;
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+    .demo-buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    .demo-button {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .demo-button.primary {
+      background: #3b82f6;
+      color: white;
+    }
+    .demo-button.primary:hover {
+      background: #2563eb;
+    }
+    .demo-button.secondary {
+      background: #f3f4f6;
+      color: #374151;
+    }
+    .demo-button.secondary:hover {
+      background: #e5e7eb;
+    }
+  </style>
+</head>
+<body>
+  <div class="demo-container">
+    <h1 class="demo-title">Whisper 智能客服 Widget</h1>
+    <p class="demo-description">
+      这是一个演示页面，展示了 Whisper 客服 Widget 的功能。<br>
+      点击右下角的客服按钮开始体验智能客服服务。
+    </p>
+    <div class="demo-buttons">
+      <button class="demo-button primary" onclick="initWidget()">初始化客服 Widget</button>
+      <button class="demo-button secondary" onclick="toggleTheme()">切换主题</button>
+      <button class="demo-button secondary" onclick="togglePosition()">切换位置</button>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+  <script>
+    let currentTheme = 'light';
+    let currentPosition = 'bottom-right';
+    let widgetInitialized = false;
+
+    function initWidget() {
+      if (window.WhisperChat && !widgetInitialized) {
+        window.WhisperChat.init({
+          apiUrl: 'http://localhost:8080/api',
+          websocketUrl: 'ws://localhost:8080/websocket',
+          customerId: 'demo_customer_' + Date.now(),
+          customerName: '演示用户',
+          theme: currentTheme,
+          position: currentPosition
+        });
+        widgetInitialized = true;
+        console.log('Whisper Chat Widget 已初始化');
+      }
+    }
+
+    function toggleTheme() {
+      currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+      if (widgetInitialized && window.WhisperChat) {
+        window.WhisperChat.setTheme(currentTheme);
+      }
+      console.log('主题切换为:', currentTheme);
+    }
+
+    function togglePosition() {
+      currentPosition = currentPosition === 'bottom-right' ? 'bottom-left' : 'bottom-right';
+      if (widgetInitialized && window.WhisperChat) {
+        window.WhisperChat.setPosition(currentPosition);
+      }
+      console.log('位置切换为:', currentPosition);
+    }
+
+    // 等待 Widget 加载完成后自动初始化
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        if (window.WhisperChat) {
+          initWidget();
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>
